@@ -23,16 +23,26 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--dark);height
 /* ── LAYOUT ── */
 .app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,.18);}
 
-/* ── HEADER ── */
+/* ── HEADER COVER PHOTO ── */
 .header{background:linear-gradient(140deg,var(--pd) 0%,var(--p) 55%,#e8788a 100%);padding:18px 18px 22px;color:#fff;position:relative;overflow:hidden;flex-shrink:0;}
-.header::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;}
-.hrow{display:flex;justify-content:space-between;align-items:center;}
-.logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;letter-spacing:.5px;line-height:1.1;}
-.logo small{font-family:'Jost',sans-serif;font-size:10px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;display:block;}
-.hicons{display:flex;gap:8px;}
-.hibtn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);border:none;cursor:pointer;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s;}
-.hibtn:hover{background:rgba(255,255,255,.3);}
-.hdate{font-size:12px;opacity:.75;margin-top:3px;font-weight:300;}
+.header-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:0;transition:opacity .4s;}
+.header-cover-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,rgba(0,0,0,.55) 100%);z-index:1;}
+.header::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;z-index:2;}
+.hrow{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:3;}
+.logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;letter-spacing:.5px;line-height:1.1;position:relative;z-index:3;text-shadow:0 2px 8px rgba(0,0,0,.3);}
+.logo small{font-family:'Jost',sans-serif;font-size:10px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;opacity:.8;display:block;}
+.hicons{display:flex;gap:8px;position:relative;z-index:3;}
+.hdate{font-size:12px;opacity:.85;margin-top:3px;font-weight:300;position:relative;z-index:3;text-shadow:0 1px 4px rgba(0,0,0,.3);}
+
+/* ── COVER UPLOAD in theme modal ── */
+.cover-uparea{width:100%;height:160px;border-radius:14px;background:var(--nude);border:3px dashed var(--gl);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;transition:.2s;overflow:hidden;position:relative;margin-bottom:4px;}
+.cover-uparea:hover{border-color:var(--p);background:var(--pl);}
+.cover-uparea img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:11px;}
+.cover-uparea .cover-label{font-size:12px;font-weight:600;color:var(--gray);margin-top:6px;letter-spacing:.3px;position:relative;z-index:2;}
+.cover-uparea .cover-overlay-lbl{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:11px;z-index:2;opacity:0;transition:.2s;}
+.cover-uparea:hover .cover-overlay-lbl{opacity:1;}
+.cover-overlay-lbl span{color:#fff;font-size:24px;}
+.cover-overlay-lbl small{color:rgba(255,255,255,.85);font-size:11px;font-weight:600;margin-top:4px;}
 
 /* ── NAV ── */
 .nav{display:flex;background:#fff;border-bottom:1px solid var(--gl);flex-shrink:0;}
@@ -201,6 +211,57 @@ input[type=file]{display:none;}
 .splash.hide{opacity:0;pointer-events:none;}
 .splash-logo{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:8px;}
 .splash-sub{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:30px;}
+
+/* ── QUICK-CREATE CLIENT (inside appt modal) ── */
+.qclibox{background:var(--nude);border-radius:12px;padding:13px;margin-top:8px;border:2px dashed var(--gl);animation:fadeUp .25s ease;}
+.qclibox .qctit{font-size:12px;font-weight:700;color:var(--gray);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── PAYMENT METHODS ── */
+.pmchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.pmchip{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:30px;border:2px solid var(--gl);cursor:pointer;font-size:13px;font-weight:600;transition:.2s;background:#fff;}
+.pmchip:hover{border-color:var(--p);}
+.pmchip.on{border-color:var(--p);background:var(--pl);color:var(--pd);}
+.pmchip .icon{font-size:16px;}
+
+/* ── PROMO PACKAGES ── */
+.pkcard{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--sh2);animation:fadeUp .3s ease;position:relative;overflow:hidden;}
+.pkcard::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--pd),var(--p),var(--acc));}
+.pkname{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;margin-bottom:3px;}
+.pkdesc{font-size:12px;color:var(--gray);line-height:1.5;margin-bottom:8px;}
+.pkprice{font-size:18px;font-weight:700;color:var(--p);margin-bottom:10px;}
+.pkprice span{font-size:12px;font-weight:400;color:var(--gray);text-decoration:line-through;margin-left:6px;}
+.pkactions{display:flex;gap:8px;}
+.pkbtn{flex:1;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'Jost',sans-serif;transition:.2s;}
+.pkbtn.wa{background:#25D366;color:#fff;}
+.pkbtn.wa:hover{background:#1ea855;}
+.pkbtn.ed{background:var(--pl);color:var(--p);}
+.pkbtn.dl{background:#ffeef0;color:#c62828;}
+
+/* ── WA BROADCAST PROGRESS ── */
+.waprog{background:var(--nude);border-radius:12px;padding:14px;margin-top:14px;}
+.waprog-bar-wrap{height:8px;background:var(--gl);border-radius:4px;overflow:hidden;margin:10px 0 6px;}
+.waprog-bar{height:100%;background:linear-gradient(90deg,#128C7E,#25D366);border-radius:4px;transition:width .3s;width:0;}
+.waprog-txt{font-size:12px;color:var(--gray);text-align:center;}
+
+/* ── TIPS BOX ── */
+.tipbox{background:linear-gradient(135deg,#fff9f0,#fff3e0);border:1.5px solid #f0c070;border-radius:12px;padding:13px;margin-bottom:14px;}
+.tipbox .tiptit{font-size:11px;font-weight:700;color:#b06000;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.tipbox ul{padding-left:16px;}
+.tipbox li{font-size:12px;color:#5a3a00;line-height:1.7;}
+
+/* ── MESSAGE TEMPLATES ── */
+.msgtpl{background:#fff;border-radius:12px;border:2px solid var(--gl);overflow:hidden;transition:.2s;}
+.msgtpl-head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--nude);border-bottom:1px solid var(--gl);}
+.msgtpl-emoji{font-size:18px;}
+.msgtpl-name{flex:1;font-size:13px;font-weight:700;color:var(--dark);}
+.msgtpl-name input{background:transparent;border:none;outline:none;font-size:13px;font-weight:700;color:var(--dark);font-family:'Jost',sans-serif;width:100%;}
+.msgtpl-acts{display:flex;gap:4px;}
+.msgtpl-body{padding:10px 12px;}
+.msgtpl-body textarea{width:100%;border:none;outline:none;font-size:12px;font-family:'Jost',sans-serif;color:var(--dark);resize:none;background:transparent;line-height:1.6;min-height:60px;}
+.msgtpl-footer{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--gl);background:#fafafa;}
+.msgtpl-send{flex:1;padding:7px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;transition:.2s;}
+.msgtpl-send:hover{background:#1ea855;}
+.msgtpl-del{padding:7px 10px;background:#ffeef0;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;}
 </style>
 </head>
 <body>
@@ -215,6 +276,8 @@ input[type=file]{display:none;}
 <div class="app">
   <!-- HEADER -->
   <div class="header" id="appHeader">
+    <img id="headerCoverImg" class="header-cover" src="" alt="" style="display:none;">
+    <div class="header-cover-overlay" id="headerCoverOverlay" style="display:none;"></div>
     <div class="hrow">
       <div class="logo" id="logoText">Studio Ceola <small id="logoSub">agenda & serviços</small></div>
       <div class="hicons">
@@ -317,12 +380,42 @@ input[type=file]{display:none;}
         <div class="sgtit">📊 Cadastros</div>
         <div class="sitm" onclick="showScr('services')"><span class="sico">✨</span><span class="slbl">Serviços</span><span class="sarr">›</span></div>
         <div class="sitm" onclick="showScr('clients')"><span class="sico">👥</span><span class="slbl">Clientes</span><span class="sarr">›</span></div>
-        <div class="sitm"><span class="sico">💳</span><span class="slbl">Formas de pagamento</span><span class="sarr">›</span></div>
-        <div class="sitm"><span class="sico">🎁</span><span class="slbl">Pacote promocional</span><span class="sarr">›</span></div>
+        <div class="sitm" onclick="openPayModal()"><span class="sico">💳</span><span class="slbl">Formas de pagamento</span><span class="sarr">›</span></div>
+        <div class="sitm" onclick="showScr('promos')"><span class="sico">🎁</span><span class="slbl">Pacote promocional</span><span class="sarr">›</span></div>
+      </div>
+
+      <!-- TIPS BOX -->
+      <div class="tipbox">
+        <div class="tiptit">💡 Dicas para melhorar seu app</div>
+        <ul>
+          <li>Adicione fotos nos serviços — clientes visualizam melhor</li>
+          <li>Configure mensagens automáticas com seu jeito de escrever</li>
+          <li>Use pacotes promocionais para fidelizar clientes recorrentes</li>
+          <li>Marque a forma de pagamento em cada agendamento para controle financeiro</li>
+          <li>Cadastre aniversário das clientes para surpreender no dia</li>
+          <li>Bloqueie horários pessoais para evitar conflitos de agenda</li>
+          <li>Envie promoções pelo WhatsApp para todas as clientes cadastradas</li>
+        </ul>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- ─── PROMOS SCREEN ─── -->
+  <div class="scr" id="scr-promos">
+    <div class="pad">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button onclick="showScr('settings')" style="background:var(--pl);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--p);">‹</button>
+        <div class="sectit">Pacotes Promocionais</div>
+        <button class="addbtn" style="margin-left:auto;" onclick="openPkModal()">+ Criar</button>
+      </div>
+      <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1.5px solid #a5d6a7;">
+        <div style="font-size:12px;font-weight:700;color:#2e7d32;margin-bottom:4px;">📢 Envio em massa via WhatsApp</div>
+        <div style="font-size:11px;color:#388e3c;line-height:1.5;margin-bottom:10px;">Crie um pacote e dispare para <strong>todas as clientes cadastradas</strong> com um clique. Cada mensagem abre individualmente no WhatsApp.</div>
+        <button class="btnp" style="margin-top:0;padding:10px;" onclick="openBroadcastModal()">📱 Enviar promoção para todas as clientes</button>
+      </div>
+      <div id="pklist" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+  </div>
 
 <!-- ─── MODAL AGENDAMENTO ─── -->
 <div class="movl" id="mAppt">
@@ -344,6 +437,20 @@ input[type=file]{display:none;}
           <span id="selcliph" style="font-size:11px;color:var(--gray);margin-left:8px;"></span>
           <span onclick="clrCli()" style="float:right;cursor:pointer;color:var(--p);font-size:16px;">✕</span>
         </div>
+        <!-- QUICK CREATE CLIENT -->
+        <div id="qcliToggle" style="margin-top:8px;display:none;">
+          <button type="button" onclick="toggleQCli()" style="width:100%;padding:8px;background:var(--nude);border:2px dashed var(--gl);border-radius:10px;font-size:12px;font-weight:600;color:var(--gray);cursor:pointer;font-family:'Jost',sans-serif;transition:.2s;" id="qclibtn">
+            ➕ Cadastrar nova cliente rapidinho
+          </button>
+        </div>
+        <div class="qclibox" id="qclibox" style="display:none;">
+          <div class="qctit">⚡ Nova Cliente (rápido)</div>
+          <div class="frow">
+            <div class="fg" style="margin-bottom:0"><input type="text" id="qclnm" placeholder="Nome completo"></div>
+            <div class="fg" style="margin-bottom:0"><input type="tel" id="qclph" placeholder="(11) 99999-9999"></div>
+          </div>
+          <button type="button" onclick="quickSaveCli()" style="width:100%;padding:9px;margin-top:8px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;">✅ Salvar e selecionar</button>
+        </div>
       </div>
       <div class="frow">
         <div class="fg"><label>Data</label><input type="date" id="adate"></div>
@@ -354,6 +461,14 @@ input[type=file]{display:none;}
         <div class="svcsel" id="svcsel"></div>
       </div>
       <div class="fg"><label>Observação</label><textarea id="aobs" placeholder="Observação especial..."></textarea></div>
+      <div class="fg">
+        <label>Forma de Pagamento</label>
+        <div class="pmchips">
+          <div class="pmchip" id="pm-dinheiro" onclick="selPmChip('dinheiro')"><span class="icon">💵</span> Dinheiro</div>
+          <div class="pmchip" id="pm-pix" onclick="selPmChip('pix')"><span class="icon">📱</span> Pix</div>
+          <div class="pmchip" id="pm-cartao" onclick="selPmChip('cartao')"><span class="icon">💳</span> Cartão</div>
+        </div>
+      </div>
       <button class="btnp" onclick="saveAppt()">💾 Gravar Agendamento</button>
     </div>
     <!-- FORM BLOCK -->
@@ -432,7 +547,30 @@ input[type=file]{display:none;}
   <div class="modal">
     <div class="mhndl"></div>
     <div class="mtit">🎨 Editor de Tema</div>
-    <div class="msub">Personalize as cores do app</div>
+    <div class="msub">Personalize cores e foto de capa do app</div>
+
+    <!-- FOTO DE CAPA -->
+    <div class="fg">
+      <label>📸 Foto de capa (header)</label>
+      <div class="cover-uparea" id="coverUpArea" onclick="document.getElementById('coverFileInp').click()">
+        <img id="coverPreviewImg" src="" alt="" style="display:none;">
+        <div class="cover-overlay-lbl">
+          <span>🔄</span>
+          <small>Trocar foto</small>
+        </div>
+        <span id="coverUpIcon">🖼️</span>
+        <span class="cover-label" id="coverUpLabel">Toque para escolher uma foto</span>
+        <input type="file" id="coverFileInp" accept="image/*" onchange="previewCoverPhoto(this)">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <button type="button" onclick="document.getElementById('coverFileInp').click()" style="flex:1;padding:9px;background:var(--pl);border:none;border-radius:10px;font-size:12px;font-weight:700;color:var(--p);cursor:pointer;font-family:'Jost',sans-serif;">📂 Escolher foto</button>
+        <button type="button" id="coverRemoveBtn" onclick="removeCoverPhoto()" style="display:none;padding:9px 14px;background:#ffeef0;border:none;border-radius:10px;font-size:12px;font-weight:700;color:#c62828;cursor:pointer;font-family:'Jost',sans-serif;">🗑️ Remover</button>
+      </div>
+      <div style="font-size:11px;color:var(--gray);margin-top:5px;line-height:1.5;">
+        📌 Sem limite de tamanho · Qualquer formato (JPG, PNG, HEIC) · A foto fica como plano de fundo do topo do app
+      </div>
+    </div>
+
     <div class="thmeditor">
       <div style="margin-bottom:14px;">
         <label>Paletas prontas</label>
@@ -460,19 +598,121 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- ─── MODAL FORMAS DE PAGAMENTO ─── -->
+<div class="movl" id="mPay">
+  <div class="modal">
+    <div class="mhndl"></div>
+    <div class="mtit">💳 Formas de Pagamento</div>
+    <div class="msub">Ative as formas aceitas no seu studio</div>
+    <div style="display:flex;flex-direction:column;gap:10px;" id="payList"></div>
+    <div style="margin-top:16px;background:var(--nude);border-radius:10px;padding:12px;font-size:12px;color:var(--gray);">
+      💡 As formas ativas ficam disponíveis ao gravar cada agendamento para controle financeiro.
+    </div>
+    <button class="btnp" onclick="savePayMethods()">💾 Salvar</button>
+    <button class="btns" onclick="closeModal('mPay')">Fechar</button>
+  </div>
+</div>
+
+<!-- ─── MODAL PACOTE PROMO ─── -->
+<div class="movl" id="mPk">
+  <div class="modal">
+    <div class="mhndl"></div>
+    <div class="mtit" id="pkMtit">Novo Pacote</div>
+    <div class="msub">Crie uma oferta especial para suas clientes</div>
+    <div class="fg"><label>Nome do pacote</label><input type="text" id="pknm" placeholder="Ex: Combo Sobrancelha + Henna"></div>
+    <div class="fg"><label>Descrição / O que inclui</label><textarea id="pkdsc" placeholder="Descreva o que está incluso..."></textarea></div>
+    <div class="frow">
+      <div class="fg"><label>Preço promo (R$)</label><input type="number" id="pkpr" placeholder="0,00" step="0.01" min="0"></div>
+      <div class="fg"><label>Preço original (R$)</label><input type="number" id="pkop" placeholder="0,00" step="0.01" min="0"></div>
+    </div>
+    <div class="fg"><label>Válido até (opcional)</label><input type="date" id="pkval"></div>
+    <div class="fg">
+      <label>Mensagem WhatsApp</label>
+      <textarea id="pkwa" placeholder="Olá {nome}! Temos uma oferta especial para você! 🌸" style="height:90px;"></textarea>
+      <div style="font-size:10px;color:var(--gray);margin-top:3px;">Use {nome} para personalizar com o nome da cliente</div>
+    </div>
+    <button class="btnp" onclick="savePk()">💾 Salvar Pacote</button>
+    <button class="btndel" id="pkDelBtn" onclick="delPk()" style="display:none">🗑️ Excluir Pacote</button>
+    <button class="btns" onclick="closeModal('mPk')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ─── MODAL BROADCAST ─── -->
+<div class="movl" id="mBroadcast">
+  <div class="modal">
+    <div class="mhndl"></div>
+    <div class="mtit">📢 Disparar para Todas</div>
+    <div class="msub">Envie uma promoção para todas as clientes cadastradas via WhatsApp</div>
+    <div class="fg">
+      <label>Selecionar Pacote</label>
+      <select id="bcPkSel" onchange="updateBcPreview()"><option value="">-- Escolha um pacote --</option></select>
+    </div>
+    <div id="bcPreview" style="display:none;background:var(--nude);border-radius:12px;padding:13px;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Prévia da mensagem</div>
+      <div id="bcPreviewTxt" style="font-size:13px;line-height:1.6;white-space:pre-line;"></div>
+    </div>
+    <div id="bcCliCount" style="font-size:13px;color:var(--gray);text-align:center;margin-bottom:12px;font-weight:500;"></div>
+    <div class="waprog" id="waprog" style="display:none;">
+      <div style="font-size:12px;font-weight:700;color:#128C7E;margin-bottom:8px;">📤 Enviando mensagens...</div>
+      <div class="waprog-bar-wrap"><div class="waprog-bar" id="wabar"></div></div>
+      <div class="waprog-txt" id="waprogTxt"></div>
+    </div>
+    <button class="btnp" id="bcStartBtn" onclick="startBroadcast()" style="background:linear-gradient(135deg,#128C7E,#25D366);">📱 Disparar para todas as clientes</button>
+    <div style="font-size:11px;color:var(--gray);text-align:center;margin-top:8px;line-height:1.5;">Cada mensagem abrirá individualmente no WhatsApp para confirmar o envio.</div>
+    <button class="btns" onclick="closeModal('mBroadcast')">Fechar</button>
+  </div>
+</div>
+
 <!-- ─── MODAL MSGS ─── -->
 <div class="movl" id="mMsg">
   <div class="modal">
     <div class="mhndl"></div>
-    <div class="mtit">💬 Mensagens Automáticas</div>
-    <div class="msub">Personalize as mensagens via WhatsApp</div>
-    <div class="fg"><label>✅ Confirmação</label><textarea id="mc1"></textarea></div>
-    <div class="fg"><label>⏰ Lembrete (1 dia antes)</label><textarea id="mc2"></textarea></div>
-    <div class="fg"><label>❌ Cancelamento</label><textarea id="mc3"></textarea></div>
-    <div style="background:var(--nude);border-radius:10px;padding:11px;font-size:11px;color:var(--gray);margin-bottom:10px;">
-      💡 Variáveis: <strong>{nome}</strong>, <strong>{data}</strong>, <strong>{hora}</strong>, <strong>{servico}</strong>
+    <div class="mtit">💬 Central de Mensagens</div>
+    <div class="msub">Templates, envio rápido e mensagem livre para qualquer cliente</div>
+
+    <!-- ABAS -->
+    <div class="mtabs" style="margin-bottom:16px;">
+      <div class="mtab on" id="msgtab-templates" onclick="switchMsgTab('templates')">📋 Templates</div>
+      <div class="mtab" id="msgtab-enviar" onclick="switchMsgTab('enviar')">📤 Enviar agora</div>
     </div>
-    <button class="btnp" onclick="saveMsgs()">💾 Salvar Mensagens</button>
+
+    <!-- ABA: TEMPLATES -->
+    <div id="msgpanel-templates">
+      <div style="background:var(--nude);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--gray);margin-bottom:14px;line-height:1.6;">
+        💡 Variáveis: <strong>{nome}</strong> · <strong>{data}</strong> · <strong>{hora}</strong> · <strong>{servico}</strong> · <strong>{preco}</strong> · <strong>{studio}</strong>
+      </div>
+      <div id="msgTemplateList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <button class="btns" style="margin-top:12px;border:2px dashed var(--gl);background:transparent;color:var(--p);font-weight:700;" onclick="addMsgTemplate()">
+        ➕ Adicionar novo template
+      </button>
+      <button class="btnp" onclick="saveAllTemplates()" style="margin-top:8px;">💾 Salvar todos os templates</button>
+    </div>
+
+    <!-- ABA: ENVIAR AGORA -->
+    <div id="msgpanel-enviar" style="display:none;">
+      <div class="fg">
+        <label>Para qual cliente?</label>
+        <input type="text" id="msgSendSearch" placeholder="Buscar cliente por nome ou telefone..." oninput="searchMsgClient()" autocomplete="off">
+        <div id="msgSendSugs" style="border:1px solid var(--gl);border-radius:10px;margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
+        <div id="msgSendSelected" style="display:none;background:var(--pl);border-radius:10px;padding:9px 12px;margin-top:6px;display:none;">
+          <span id="msgSendName" style="font-weight:700;font-size:14px;"></span>
+          <span id="msgSendPhone" style="font-size:11px;color:var(--gray);margin-left:8px;"></span>
+          <span onclick="clearMsgClient()" style="float:right;cursor:pointer;color:var(--p);font-size:16px;">✕</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Usar template ou escrever livre</label>
+        <select id="msgTplPicker" onchange="applyMsgTemplate()" style="margin-bottom:8px;">
+          <option value="">✍️ Mensagem livre (escreva abaixo)</option>
+        </select>
+        <textarea id="msgSendText" placeholder="Digite a mensagem para enviar..." style="height:110px;"></textarea>
+      </div>
+      <div style="background:var(--nude);border-radius:10px;padding:9px 12px;font-size:11px;color:var(--gray);margin-bottom:12px;line-height:1.5;">
+        💡 O nome da cliente será inserido automaticamente no lugar de <strong>{nome}</strong>
+      </div>
+      <button class="btnp" style="background:linear-gradient(135deg,#128C7E,#25D366);" onclick="sendMsgNow()">📱 Abrir WhatsApp e enviar</button>
+    </div>
+
     <button class="btns" onclick="closeModal('mMsg')">Fechar</button>
   </div>
 </div>
@@ -493,11 +733,13 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 let curDate = new Date(), selDate = new Date();
 let services = [], clients = [], appointments = [];
 let configs = {};
-let editSvcId = null, editCliId = null;
-let selCliId = null, selSvcId = null;
-let svPhotoFile = null, cliPhotoFile = null;
-let svPhotoUrl = null, cliPhotoUrl = null;
+let editSvcId = null, editCliId = null, editPkId = null;
+let selCliId = null, selSvcId = null, curPm = null;
+let svPhotoFile = null, cliPhotoFile = null, coverPhotoFile = null;
+let svPhotoUrl = null, cliPhotoUrl = null, coverPhotoUrl = null;
 let monthEvents = {};
+let promos = [];
+let payMethods = { dinheiro: true, pix: true, cartao: true };
 
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -507,13 +749,15 @@ const WDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 // ═══════════════════════════════════════════════════════
 async function init() {
   try {
-    await Promise.all([loadConfigs(), loadServices(), loadClients()]);
+    await requestNotifPermission();
+    await Promise.all([loadConfigs(), loadServices(), loadClients(), loadPromos()]);
     await loadMonthEvents();
     renderCalendar();
     await renderAppointments();
     applyThemeFromConfig();
     setHeaderDate();
     loadSettingsUI();
+    loadPayFromConfig();
   } catch(e) {
     console.error('Init error:', e);
     toast('⚠️ Erro ao conectar. Verifique o Supabase.', 'er');
@@ -543,10 +787,7 @@ function loadSettingsUI() {
   const nm = configs['studio_name'] || 'Studio Ceola';
   document.getElementById('studioNameInp').value = nm;
   document.getElementById('logoText').childNodes[0].textContent = nm + ' ';
-  // msgs
-  document.getElementById('mc1').value = configs['msg_confirm'] || '';
-  document.getElementById('mc2').value = configs['msg_reminder'] || '';
-  document.getElementById('mc3').value = configs['msg_cancel'] || '';
+  loadMsgTemplates();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -567,6 +808,9 @@ function applyThemeFromConfig() {
   const acc = configs['theme_accent'] || '#c9a96e';
   const bg = configs['theme_bg'] || '#fdf8f5';
   applyColors(p, pd, acc, bg);
+  // Apply cover photo if saved
+  const cover = configs['header_cover_url'];
+  if (cover) applyCoverPhoto(cover);
 }
 
 function applyColors(p, pd, acc, bg) {
@@ -592,12 +836,52 @@ function lighten(hex, amt) {
   return '#'+[r,g,b].map(v=>Math.min(255,v).toString(16).padStart(2,'0')).join('');
 }
 
+function applyCoverPhoto(url) {
+  const img = document.getElementById('headerCoverImg');
+  const overlay = document.getElementById('headerCoverOverlay');
+  if (url) {
+    img.src = url;
+    img.style.display = '';
+    overlay.style.display = '';
+    // Remove gradient background when photo is present - overlay handles contrast
+    document.getElementById('appHeader').style.background = 'transparent';
+  } else {
+    img.style.display = 'none';
+    overlay.style.display = 'none';
+    applyColors(
+      configs['theme_primary'] || '#c9506a',
+      configs['theme_secondary'] || '#9b3050',
+      configs['theme_accent'] || '#c9a96e',
+      configs['theme_bg'] || '#fdf8f5'
+    );
+  }
+}
+
 function openThemeModal() {
   // init color pickers
   document.getElementById('cp1').value = configs['theme_primary'] || '#c9506a';
   document.getElementById('cp2').value = configs['theme_secondary'] || '#9b3050';
   document.getElementById('cp3').value = configs['theme_accent'] || '#c9a96e';
   document.getElementById('cp4').value = configs['theme_bg'] || '#fdf8f5';
+
+  // Load existing cover photo into preview
+  coverPhotoFile = null;
+  const existingCover = configs['header_cover_url'] || null;
+  coverPhotoUrl = existingCover;
+  const prevImg = document.getElementById('coverPreviewImg');
+  const icon = document.getElementById('coverUpIcon');
+  const lbl = document.getElementById('coverUpLabel');
+  const rmBtn = document.getElementById('coverRemoveBtn');
+  if (existingCover) {
+    prevImg.src = existingCover; prevImg.style.display = '';
+    icon.style.display = 'none'; lbl.style.display = 'none';
+    rmBtn.style.display = '';
+  } else {
+    prevImg.style.display = 'none';
+    icon.style.display = ''; lbl.style.display = '';
+    rmBtn.style.display = 'none';
+  }
+
   // render presets
   const cont = document.getElementById('presets'); cont.innerHTML = '';
   PALETTES.forEach(pl => {
@@ -617,6 +901,36 @@ function openThemeModal() {
   document.getElementById('mTheme').classList.add('op');
 }
 
+function previewCoverPhoto(input) {
+  if (!input.files[0]) return;
+  coverPhotoFile = input.files[0];
+  // Use FileReader for unlimited size - no compression, just preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const url = e.target.result;
+    const prevImg = document.getElementById('coverPreviewImg');
+    prevImg.src = url; prevImg.style.display = '';
+    document.getElementById('coverUpIcon').style.display = 'none';
+    document.getElementById('coverUpLabel').style.display = 'none';
+    document.getElementById('coverRemoveBtn').style.display = '';
+    // Live preview on header
+    applyCoverPhoto(url);
+  };
+  reader.readAsDataURL(coverPhotoFile);
+}
+
+function removeCoverPhoto() {
+  coverPhotoFile = null; coverPhotoUrl = null;
+  const prevImg = document.getElementById('coverPreviewImg');
+  prevImg.src = ''; prevImg.style.display = 'none';
+  document.getElementById('coverUpIcon').style.display = '';
+  document.getElementById('coverUpLabel').style.display = '';
+  document.getElementById('coverRemoveBtn').style.display = 'none';
+  document.getElementById('coverFileInp').value = '';
+  // Remove from header live
+  applyCoverPhoto(null);
+}
+
 function liveTheme() {
   applyColors(
     document.getElementById('cp1').value,
@@ -629,10 +943,52 @@ function liveTheme() {
 async function saveTheme() {
   const p=document.getElementById('cp1').value, pd=document.getElementById('cp2').value,
         acc=document.getElementById('cp3').value, bg=document.getElementById('cp4').value;
-  await Promise.all([
-    saveConfig('theme_primary', p), saveConfig('theme_secondary', pd),
-    saveConfig('theme_accent', acc), saveConfig('theme_bg', bg),
-  ]);
+
+  // Upload cover photo if new file chosen
+  let finalCoverUrl = coverPhotoUrl; // may be null (removed) or existing URL
+  if (coverPhotoFile) {
+    toast('⬆️ Enviando foto...', '');
+    try {
+      const ext = coverPhotoFile.name.split('.').pop() || 'jpg';
+      const path = `cover_${Date.now()}.${ext}`;
+      // Upload without size limit
+      const { error: upErr } = await sb.storage.from('avatars').upload(path, coverPhotoFile, {
+        upsert: true,
+        contentType: coverPhotoFile.type || 'image/jpeg',
+      });
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+        finalCoverUrl = urlData.publicUrl;
+      } else {
+        // Fallback: save as base64 in config (works for smaller files)
+        const reader = new FileReader();
+        finalCoverUrl = await new Promise(res => {
+          reader.onload = e => res(e.target.result);
+          reader.readAsDataURL(coverPhotoFile);
+        });
+      }
+    } catch(e) {
+      console.warn('Cover upload error, using base64 fallback:', e);
+    }
+  }
+
+  const saves = [
+    saveConfig('theme_primary', p),
+    saveConfig('theme_secondary', pd),
+    saveConfig('theme_accent', acc),
+    saveConfig('theme_bg', bg),
+    saveConfig('header_cover_url', finalCoverUrl || ''),
+  ];
+  await Promise.all(saves);
+
+  // Apply cover
+  if (finalCoverUrl) {
+    applyCoverPhoto(finalCoverUrl);
+  } else {
+    applyCoverPhoto(null);
+    applyColors(p, pd, acc, bg);
+  }
+
   closeModal('mTheme');
   toast('🎨 Tema salvo!', 'ok');
 }
@@ -771,9 +1127,12 @@ async function confirmDel(id, msg) {
 function openApptModal() {
   document.getElementById('adate').value = toDS(selDate);
   swTab('a');
-  selCliId = null; selSvcId = null;
+  selCliId = null; selSvcId = null; curPm = null;
   clrCli();
   document.getElementById('aobs').value = '';
+  document.getElementById('qcliToggle').style.display = 'none';
+  document.getElementById('qclibox').style.display = 'none';
+  document.querySelectorAll('.pmchip').forEach(c=>c.classList.remove('on'));
   renderSvcSel();
   document.getElementById('mAppt').classList.add('op');
 }
@@ -806,8 +1165,11 @@ function renderSvcSel() {
 function searchCli() {
   const q = document.getElementById('cinp').value.toLowerCase();
   const box = document.getElementById('csugs');
-  if (q.length < 1) { box.style.display='none'; return; }
+  const qToggle = document.getElementById('qcliToggle');
+  if (q.length < 1) { box.style.display='none'; qToggle.style.display='none'; return; }
   const matches = clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+  // Show quick-create toggle when typing but no match
+  qToggle.style.display = '';
   if (!matches.length) { box.style.display='none'; return; }
   box.style.display='block'; box.innerHTML='';
   matches.slice(0,5).forEach(c => {
@@ -818,6 +1180,35 @@ function searchCli() {
     el.onclick = () => pickCli(c);
     box.appendChild(el);
   });
+}
+
+function toggleQCli() {
+  const box = document.getElementById('qclibox');
+  const open = box.style.display !== 'none';
+  box.style.display = open ? 'none' : '';
+  document.getElementById('qclibtn').textContent = open ? '➕ Cadastrar nova cliente rapidinho' : '✕ Fechar cadastro rápido';
+}
+
+async function quickSaveCli() {
+  const name = document.getElementById('qclnm').value.trim();
+  const phone = document.getElementById('qclph').value.trim();
+  if (!name || !phone) { toast('⚠️ Preencha nome e telefone!'); return; }
+  const { data, error } = await sb.from('clients').insert({ name, phone }).select().single();
+  if (error) { toast('❌ Erro ao salvar: ' + error.message, 'er'); return; }
+  await loadClients();
+  pickCli(data);
+  document.getElementById('qclibox').style.display = 'none';
+  document.getElementById('qcliToggle').style.display = 'none';
+  document.getElementById('qclnm').value = '';
+  document.getElementById('qclph').value = '';
+  toast('✅ Cliente cadastrada e selecionada!', 'ok');
+}
+
+function selPmChip(pm) {
+  curPm = pm;
+  document.querySelectorAll('.pmchip').forEach(c=>c.classList.remove('on'));
+  const el = document.getElementById('pm-'+pm);
+  if (el) el.classList.add('on');
 }
 
 function pickCli(c) {
@@ -845,7 +1236,7 @@ async function saveAppt() {
   const { error } = await sb.from('appointments').insert({
     type: 'appointment', client_id: selCliId, service_id: selSvcId,
     date, time_start: time, notes: document.getElementById('aobs').value,
-    status: 'confirmed', whatsapp_sent: false
+    status: 'confirmed', whatsapp_sent: false, payment_method: curPm
   });
   if (error) { toast('❌ Erro ao salvar: ' + error.message, 'er'); return; }
 
@@ -853,11 +1244,36 @@ async function saveAppt() {
   await loadMonthEvents(); renderCalendar(); await renderAppointments();
   toast('✅ Agendamento salvo!', 'ok');
 
-  // Auto WhatsApp
+  // Notificação no celular
   const cli = clients.find(c=>c.id===selCliId);
   const svc = services.find(s=>s.id===selSvcId);
+  const apptDate = document.getElementById('adate').value;
+  const apptTime = document.getElementById('atime').value;
+
+  showNotification(
+    '✅ Agendamento confirmado!',
+    `${cli?.name} — ${svc?.name}\n${fmtDS(apptDate)} às ${apptTime}`
+  );
+
+  // Abrir WhatsApp automaticamente com template de confirmação
   if (cli) {
-    setTimeout(()=>toast(`📱 Lembrete: enviar confirmação para ${cli.name}!`, 'wa'), 1200);
+    const confirmTpl = msgTemplates.find(t=>t.id==='tpl_confirm');
+    let msg = confirmTpl?.text || configs['msg_confirm'] || 'Olá {nome}! 💕 Seu horário está confirmado para {data} às {hora} para {servico}. 🌸';
+    const studioName = configs['studio_name'] || 'Studio Ceola';
+    msg = msg
+      .replace(/{nome}/g, cli.name)
+      .replace(/{data}/g, fmtDS(apptDate))
+      .replace(/{hora}/g, apptTime)
+      .replace(/{servico}/g, svc?.name || 'seu serviço')
+      .replace(/{preco}/g, svc ? `R$ ${Number(svc.price).toFixed(2)}` : '')
+      .replace(/{studio}/g, studioName);
+    const phone = cli.phone.replace(/\D/g,'');
+    setTimeout(() => {
+      toast(`📱 Abrindo WhatsApp para confirmar com ${cli.name}...`, 'wa');
+      setTimeout(() => {
+        window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      }, 800);
+    }, 600);
   }
 }
 
@@ -1112,21 +1528,409 @@ function sendWADirect(event, clientId) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  MSGS
+//  CENTRAL DE MENSAGENS — templates ilimitados + envio direto
 // ═══════════════════════════════════════════════════════
-function openMsgModal() { document.getElementById('mMsg').classList.add('op'); }
-async function saveMsgs() {
-  await Promise.all([
-    saveConfig('msg_confirm',document.getElementById('mc1').value),
-    saveConfig('msg_reminder',document.getElementById('mc2').value),
-    saveConfig('msg_cancel',document.getElementById('mc3').value),
-  ]);
-  closeModal('mMsg'); toast('✅ Mensagens salvas!','ok');
+const DEFAULT_TEMPLATES = [
+  { id:'tpl_confirm',  emoji:'✅', name:'Confirmação de agendamento',
+    text:'Olá {nome}! 💕 Seu horário está confirmado para {data} às {hora} para {servico}. Qualquer dúvida, é só chamar! 🌸\n— {studio}' },
+  { id:'tpl_reminder', emoji:'⏰', name:'Lembrete (véspera)',
+    text:'Oi {nome}! 💅 Lembrando que amanhã você tem horário às {hora} para {servico}. Te espero! 🥰\n— {studio}' },
+  { id:'tpl_cancel',   emoji:'❌', name:'Cancelamento',
+    text:'Olá {nome}, seu agendamento de {data} às {hora} foi cancelado. Entre em contato para remarcar! 💕\n— {studio}' },
+  { id:'tpl_birthday', emoji:'🎂', name:'Feliz Aniversário',
+    text:'Feliz aniversário, {nome}! 🎉🌸 Que seu dia seja lindo! Como presente especial, temos um mimo te esperando aqui no {studio}. Entre em contato! 💕' },
+  { id:'tpl_promo',    emoji:'🎁', name:'Promoção especial',
+    text:'Oi {nome}! 🌟 Temos uma oferta especial para você no {studio}!\n\n💅 {servico} com condições especiais!\n\nChama aqui para saber mais! 💕' },
+  { id:'tpl_thanks',   emoji:'💗', name:'Obrigada pela visita',
+    text:'Oi {nome}! 💕 Foi um prazer te atender hoje! Espero que tenha adorado o resultado. Não esquece de marcar a manutenção! 🌸\n— {studio}' },
+];
+
+let msgTemplates = [];
+let msgSendClientId = null;
+
+function loadMsgTemplates() {
+  try {
+    const saved = configs['msg_templates'];
+    if (saved) {
+      msgTemplates = JSON.parse(saved);
+    } else {
+      // Migrate old individual configs if exist
+      msgTemplates = DEFAULT_TEMPLATES.map(t => ({...t}));
+      if (configs['msg_confirm']) msgTemplates.find(t=>t.id==='tpl_confirm').text = configs['msg_confirm'];
+      if (configs['msg_reminder']) msgTemplates.find(t=>t.id==='tpl_reminder').text = configs['msg_reminder'];
+      if (configs['msg_cancel']) msgTemplates.find(t=>t.id==='tpl_cancel').text = configs['msg_cancel'];
+    }
+  } catch(e) {
+    msgTemplates = DEFAULT_TEMPLATES.map(t=>({...t}));
+  }
+}
+
+function openMsgModal() {
+  loadMsgTemplates();
+  switchMsgTab('templates');
+  document.getElementById('mMsg').classList.add('op');
+}
+
+function switchMsgTab(tab) {
+  ['templates','enviar'].forEach(t => {
+    document.getElementById('msgtab-'+t).classList.toggle('on', t===tab);
+    document.getElementById('msgpanel-'+t).style.display = t===tab ? '' : 'none';
+  });
+  if (tab==='templates') renderMsgTemplates();
+  if (tab==='enviar') renderMsgEnviarTab();
+}
+
+function renderMsgTemplates() {
+  const list = document.getElementById('msgTemplateList');
+  list.innerHTML = '';
+  msgTemplates.forEach((tpl, idx) => {
+    const card = document.createElement('div');
+    card.className = 'msgtpl';
+    card.innerHTML = `
+      <div class="msgtpl-head">
+        <span class="msgtpl-emoji">${tpl.emoji||'💬'}</span>
+        <div class="msgtpl-name"><input type="text" value="${tpl.name}" onchange="msgTemplates[${idx}].name=this.value" placeholder="Nome do template"></div>
+        <div class="msgtpl-acts">
+          <input type="text" value="${tpl.emoji||'💬'}" onchange="msgTemplates[${idx}].emoji=this.value;this.closest('.msgtpl').querySelector('.msgtpl-emoji').textContent=this.value" style="width:36px;text-align:center;font-size:16px;border:1.5px solid var(--gl);border-radius:8px;padding:3px;font-family:'Jost',sans-serif;" maxlength="2" title="Emoji">
+        </div>
+      </div>
+      <div class="msgtpl-body">
+        <textarea onchange="msgTemplates[${idx}].text=this.value" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${tpl.text||''}</textarea>
+      </div>
+      <div class="msgtpl-footer">
+        <button class="msgtpl-send" onclick="openSendWithTemplate(${idx})">📱 Enviar para cliente</button>
+        <button class="msgtpl-del" onclick="deleteMsgTemplate(${idx})">🗑️</button>
+      </div>`;
+    // Auto-resize textarea
+    setTimeout(() => {
+      const ta = card.querySelector('textarea');
+      ta.style.height = ta.scrollHeight + 'px';
+      ta.addEventListener('input', () => { ta.style.height=''; ta.style.height=ta.scrollHeight+'px'; });
+    }, 50);
+    list.appendChild(card);
+  });
+}
+
+function addMsgTemplate() {
+  msgTemplates.push({
+    id: 'tpl_custom_' + Date.now(),
+    emoji: '💬',
+    name: 'Novo template',
+    text: 'Olá {nome}! '
+  });
+  renderMsgTemplates();
+  // Scroll to new
+  const list = document.getElementById('msgTemplateList');
+  list.lastElementChild?.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function deleteMsgTemplate(idx) {
+  if (!confirm('Excluir este template?')) return;
+  msgTemplates.splice(idx, 1);
+  renderMsgTemplates();
+}
+
+async function saveAllTemplates() {
+  // Collect current textarea values
+  document.querySelectorAll('#msgTemplateList .msgtpl').forEach((card, idx) => {
+    if (msgTemplates[idx]) {
+      msgTemplates[idx].text = card.querySelector('textarea').value;
+      msgTemplates[idx].name = card.querySelector('.msgtpl-name input').value;
+    }
+  });
+  await saveConfig('msg_templates', JSON.stringify(msgTemplates));
+  // Also update legacy keys for backward compat
+  const confirm_tpl = msgTemplates.find(t=>t.id==='tpl_confirm');
+  const remind_tpl  = msgTemplates.find(t=>t.id==='tpl_reminder');
+  const cancel_tpl  = msgTemplates.find(t=>t.id==='tpl_cancel');
+  if (confirm_tpl) await saveConfig('msg_confirm', confirm_tpl.text);
+  if (remind_tpl)  await saveConfig('msg_reminder', remind_tpl.text);
+  if (cancel_tpl)  await saveConfig('msg_cancel', cancel_tpl.text);
+  toast('✅ Todos os templates salvos!', 'ok');
+}
+
+// ── ENVIO DIRETO ──────────────────────────────────────
+function renderMsgEnviarTab() {
+  // Populate template picker
+  const sel = document.getElementById('msgTplPicker');
+  sel.innerHTML = '<option value="">✍️ Mensagem livre (escreva abaixo)</option>';
+  msgTemplates.forEach((tpl, idx) => {
+    const o = document.createElement('option');
+    o.value = idx;
+    o.textContent = `${tpl.emoji||'💬'} ${tpl.name}`;
+    sel.appendChild(o);
+  });
+  // Reset client selection
+  clearMsgClient();
+  document.getElementById('msgSendText').value = '';
+}
+
+function openSendWithTemplate(idx) {
+  switchMsgTab('enviar');
+  document.getElementById('msgTplPicker').value = idx;
+  applyMsgTemplate();
+}
+
+function applyMsgTemplate() {
+  const idx = document.getElementById('msgTplPicker').value;
+  if (idx === '') return;
+  const tpl = msgTemplates[parseInt(idx)];
+  if (!tpl) return;
+  const studioName = configs['studio_name'] || 'Studio Ceola';
+  let text = tpl.text
+    .replace(/{studio}/g, studioName)
+    .replace(/{servico}/g, '[serviço]')
+    .replace(/{data}/g, '[data]')
+    .replace(/{hora}/g, '[hora]')
+    .replace(/{preco}/g, '[preço]');
+  document.getElementById('msgSendText').value = text;
+}
+
+function searchMsgClient() {
+  const q = document.getElementById('msgSendSearch').value.toLowerCase();
+  const box = document.getElementById('msgSendSugs');
+  if (q.length < 1) { box.style.display='none'; return; }
+  const matches = clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+  if (!matches.length) { box.style.display='none'; return; }
+  box.style.display='block'; box.innerHTML='';
+  matches.slice(0,6).forEach(c => {
+    const el = document.createElement('div');
+    el.style.cssText='display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;transition:.2s;';
+    el.onmouseenter=()=>el.style.background='var(--pl)';
+    el.onmouseleave=()=>el.style.background='';
+    const init=c.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+    const avHtml=c.avatar_url?`<img src="${c.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`:`<div style="width:32px;height:32px;border-radius:50%;background:var(--pl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--pd);flex-shrink:0;">${init}</div>`;
+    el.innerHTML=`${avHtml}<div><div style="font-size:13px;font-weight:600">${c.name}</div><div style="font-size:11px;color:var(--gray)">${c.phone}</div></div>`;
+    el.onclick=()=>pickMsgClient(c);
+    box.appendChild(el);
+  });
+}
+
+function pickMsgClient(c) {
+  msgSendClientId = c.id;
+  document.getElementById('msgSendSearch').value='';
+  document.getElementById('msgSendSugs').style.display='none';
+  const sel=document.getElementById('msgSendSelected');
+  sel.style.display='block';
+  document.getElementById('msgSendName').textContent=c.name;
+  document.getElementById('msgSendPhone').textContent=c.phone;
+  // Auto-replace {nome} in textarea
+  const ta=document.getElementById('msgSendText');
+  ta.value=ta.value.replace(/{nome}/g,c.name);
+}
+
+function clearMsgClient() {
+  msgSendClientId=null;
+  document.getElementById('msgSendSearch').value='';
+  document.getElementById('msgSendSugs').style.display='none';
+  document.getElementById('msgSendSelected').style.display='none';
+}
+
+function sendMsgNow() {
+  if(!msgSendClientId){toast('⚠️ Selecione uma cliente primeiro!');return;}
+  const c=clients.find(x=>x.id===msgSendClientId);
+  if(!c){toast('⚠️ Cliente não encontrada!');return;}
+  let text=document.getElementById('msgSendText').value.trim();
+  if(!text){toast('⚠️ Escreva ou selecione uma mensagem!');return;}
+  const studioName=configs['studio_name']||'Studio Ceola';
+  text=text.replace(/{nome}/g,c.name).replace(/{studio}/g,studioName);
+  const phone=c.phone.replace(/\D/g,'');
+  window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(text)}`,'_blank');
+  toast(`📱 Abrindo WhatsApp para ${c.name}...`,'wa');
+}
+
+// legacy compat
+async function saveMsgs() { await saveAllTemplates(); }
+
+// ═══════════════════════════════════════════════════════
+//  PAYMENT METHODS
+// ═══════════════════════════════════════════════════════
+function loadPayFromConfig() {
+  try {
+    const saved = configs['pay_methods'];
+    if (saved) payMethods = JSON.parse(saved);
+  } catch(e) {}
+}
+
+const PAY_OPTIONS = [
+  { id:'dinheiro', label:'Dinheiro', icon:'💵' },
+  { id:'pix',     label:'Pix',      icon:'📱' },
+  { id:'cartao',  label:'Cartão de Crédito/Débito', icon:'💳' },
+];
+
+function openPayModal() {
+  const list = document.getElementById('payList'); list.innerHTML='';
+  PAY_OPTIONS.forEach(pm => {
+    const on = payMethods[pm.id] !== false;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:13px;background:#fff;border-radius:12px;border:2px solid var(--gl);';
+    row.innerHTML = `
+      <span style="font-size:22px">${pm.icon}</span>
+      <span style="flex:1;font-size:14px;font-weight:600">${pm.label}</span>
+      <div class="tog ${on?'on':''}" id="pmtog-${pm.id}" onclick="this.classList.toggle('on')"></div>`;
+    list.appendChild(row);
+  });
+  document.getElementById('mPay').classList.add('op');
+}
+
+async function savePayMethods() {
+  PAY_OPTIONS.forEach(pm => {
+    payMethods[pm.id] = document.getElementById('pmtog-'+pm.id).classList.contains('on');
+  });
+  await saveConfig('pay_methods', JSON.stringify(payMethods));
+  // Update chips in appt modal visibility
+  PAY_OPTIONS.forEach(pm => {
+    const chip = document.getElementById('pm-'+pm.id);
+    if (chip) chip.style.display = payMethods[pm.id] !== false ? '' : 'none';
+  });
+  closeModal('mPay');
+  toast('✅ Formas de pagamento salvas!', 'ok');
 }
 
 // ═══════════════════════════════════════════════════════
-//  UTILS
+//  PROMO PACKAGES
 // ═══════════════════════════════════════════════════════
+async function loadPromos() {
+  const { data } = await sb.from('promo_packages').select('*').eq('active', true).order('created_at', {ascending:false});
+  promos = data || [];
+}
+
+function renderPromos() {
+  const list = document.getElementById('pklist'); list.innerHTML='';
+  if (!promos.length) {
+    list.innerHTML='<div class="empty"><div class="em">🎁</div><p>Nenhum pacote cadastrado.<br>Crie um e envie para suas clientes!</p></div>';
+    return;
+  }
+  promos.forEach(pk => {
+    const card = document.createElement('div'); card.className='pkcard';
+    const valid = pk.valid_until ? ` · Válido até ${fmtDS(pk.valid_until)}` : '';
+    card.innerHTML = `
+      <div class="pkname">${pk.name}</div>
+      <div class="pkdesc">${pk.description||''}</div>
+      <div class="pkprice">R$ ${Number(pk.price).toFixed(2)} <span>R$ ${Number(pk.original_price||pk.price).toFixed(2)}</span>${valid?`<span style="font-size:11px;color:var(--gray);text-decoration:none;margin-left:6px;">📅${valid}</span>`:''}</div>
+      <div class="pkactions">
+        <button class="pkbtn wa" onclick="openBroadcastModal('${pk.id}')">📱 Enviar para todas</button>
+        <button class="pkbtn ed" onclick="editPk('${pk.id}')">✏️</button>
+        <button class="pkbtn dl" onclick="delPkDirect('${pk.id}')">🗑️</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function openPkModal() {
+  editPkId=null;
+  document.getElementById('pkMtit').textContent='Novo Pacote';
+  document.getElementById('pkDelBtn').style.display='none';
+  ['pknm','pkdsc','pkpr','pkop','pkval'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pkwa').value='Olá {nome}! 🌸\n\nTemos uma oferta especial para você!\n\n✨ {pacote}\n💰 Apenas R$ {preco}\n\nGaranta o seu horário! Responda essa mensagem para agendar. 💕';
+  document.getElementById('mPk').classList.add('op');
+}
+
+function editPk(id) {
+  const pk=promos.find(x=>x.id===id); if(!pk) return;
+  editPkId=id;
+  document.getElementById('pkMtit').textContent='Editar Pacote';
+  document.getElementById('pkDelBtn').style.display='';
+  document.getElementById('pknm').value=pk.name;
+  document.getElementById('pkdsc').value=pk.description||'';
+  document.getElementById('pkpr').value=pk.price;
+  document.getElementById('pkop').value=pk.original_price||'';
+  document.getElementById('pkval').value=pk.valid_until||'';
+  document.getElementById('pkwa').value=pk.wa_message||'';
+  document.getElementById('mPk').classList.add('op');
+}
+
+async function savePk() {
+  const name=document.getElementById('pknm').value.trim();
+  const price=document.getElementById('pkpr').value;
+  if(!name||!price){toast('⚠️ Preencha nome e preço!');return;}
+  const obj={name,description:document.getElementById('pkdsc').value,price:parseFloat(price),
+    original_price:parseFloat(document.getElementById('pkop').value)||null,
+    valid_until:document.getElementById('pkval').value||null,
+    wa_message:document.getElementById('pkwa').value,active:true,updated_at:new Date().toISOString()};
+  let error;
+  if(editPkId){({error}=await sb.from('promo_packages').update(obj).eq('id',editPkId));}
+  else{({error}=await sb.from('promo_packages').insert(obj));}
+  if(error){toast('❌ Erro: '+error.message,'er');return;}
+  closeModal('mPk');
+  await loadPromos(); renderPromos();
+  toast('✅ Pacote salvo!','ok');
+}
+
+async function delPk() {
+  if(!editPkId||!confirm('Excluir pacote?'))return;
+  await sb.from('promo_packages').update({active:false}).eq('id',editPkId);
+  closeModal('mPk'); await loadPromos(); renderPromos();
+  toast('🗑️ Pacote removido');
+}
+
+async function delPkDirect(id) {
+  if(!confirm('Excluir pacote?'))return;
+  await sb.from('promo_packages').update({active:false}).eq('id',id);
+  await loadPromos(); renderPromos(); toast('🗑️ Pacote removido');
+}
+
+// ═══════════════════════════════════════════════════════
+//  BROADCAST
+// ═══════════════════════════════════════════════════════
+async function openBroadcastModal(pkId) {
+  document.getElementById('mBroadcast').classList.add('op');
+  document.getElementById('waprog').style.display='none';
+  document.getElementById('bcPreview').style.display='none';
+  // Populate select
+  const sel=document.getElementById('bcPkSel');
+  sel.innerHTML='<option value="">-- Escolha um pacote --</option>';
+  promos.forEach(pk=>{
+    const o=document.createElement('option');o.value=pk.id;o.textContent=pk.name;sel.appendChild(o);
+  });
+  if(pkId) sel.value=pkId;
+  updateBcPreview();
+  const {data}=await sb.from('clients').select('id,phone').not('phone','is',null);
+  document.getElementById('bcCliCount').textContent=`📋 ${(data||[]).length} clientes cadastradas receberão a mensagem`;
+}
+
+function updateBcPreview() {
+  const pkId=document.getElementById('bcPkSel').value;
+  const pk=promos.find(x=>x.id===pkId);
+  const prev=document.getElementById('bcPreview');
+  if(!pk){prev.style.display='none';return;}
+  prev.style.display='';
+  let msg=(pk.wa_message||'Olá {nome}! Confira nossa promoção: {pacote} por R$ {preco}');
+  msg=msg.replace(/{nome}/g,'[Nome da cliente]').replace(/{pacote}/g,pk.name).replace(/{preco}/g,Number(pk.price).toFixed(2));
+  document.getElementById('bcPreviewTxt').textContent=msg;
+}
+
+let broadcastIdx=0, broadcastList=[];
+async function startBroadcast() {
+  const pkId=document.getElementById('bcPkSel').value;
+  const pk=promos.find(x=>x.id===pkId);
+  if(!pk){toast('⚠️ Selecione um pacote!');return;}
+  const{data:clis}=await sb.from('clients').select('name,phone').not('phone','is',null);
+  if(!clis||!clis.length){toast('⚠️ Nenhuma cliente cadastrada!');return;}
+  broadcastList=clis; broadcastIdx=0;
+  document.getElementById('waprog').style.display='';
+  document.getElementById('bcStartBtn').textContent='⏳ Enviando...';
+  sendNextBroadcast(pk);
+}
+
+function sendNextBroadcast(pk) {
+  if(broadcastIdx>=broadcastList.length){
+    document.getElementById('wabar').style.width='100%';
+    document.getElementById('waprogTxt').textContent=`✅ ${broadcastList.length} mensagens abertas!`;
+    document.getElementById('bcStartBtn').textContent='✅ Concluído!';
+    return;
+  }
+  const c=broadcastList[broadcastIdx];
+  const total=broadcastList.length;
+  document.getElementById('wabar').style.width=`${Math.round((broadcastIdx/total)*100)}%`;
+  document.getElementById('waprogTxt').textContent=`Enviando ${broadcastIdx+1} de ${total}: ${c.name}`;
+  let msg=(pk.wa_message||'Olá {nome}! ').replace(/{nome}/g,c.name).replace(/{pacote}/g,pk.name).replace(/{preco}/g,Number(pk.price).toFixed(2));
+  const phone=c.phone.replace(/\D/g,'');
+  window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  broadcastIdx++;
+  // Small delay to avoid popup blocking
+  setTimeout(()=>sendNextBroadcast(pk),900);
+}
 function showScr(name) {
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
@@ -1135,6 +1939,7 @@ function showScr(name) {
   if(idx!==undefined) document.querySelectorAll('.ntab')[idx].classList.add('on');
   if(name==='services') renderServices();
   if(name==='clients') renderClients();
+  if(name==='promos') renderPromos();
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('op'); }
@@ -1146,13 +1951,65 @@ function toast(msg, type='') {
   t._tm=setTimeout(()=>t.classList.remove('sh'),3000);
 }
 
-async function notifDemo() {
-  const todayS=toDS(new Date());
-  const{data}=await sb.from('appointments').select('*,clients(name),services(name)').eq('date',todayS).eq('type','appointment').neq('status','cancelled');
-  if(data&&data.length){
-    const a=data[0];
-    toast(`🔔 Hoje ${a.time_start} — ${a.clients?.name} | ${a.services?.name}`);
+// ═══════════════════════════════════════════════════════
+//  NOTIFICAÇÕES (Web Push API)
+// ═══════════════════════════════════════════════════════
+let notifPermission = 'default';
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  notifPermission = await Notification.requestPermission();
+}
+
+function showNotification(title, body, icon='💅') {
+  if (!('Notification' in window)) { toast(body); return; }
+  if (Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">💅</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">💅</text></svg>',
+        tag: 'studio-ceola',
+        requireInteraction: false,
+        silent: false,
+      });
+    } catch(e) { toast(body); }
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') showNotification(title, body);
+    });
   } else {
+    toast(body);
+  }
+}
+
+async function checkTodayNotifications() {
+  const todayS = toDS(new Date());
+  const { data } = await sb.from('appointments')
+    .select('time_start, clients(name), services(name)')
+    .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
+    .order('time_start');
+  if (!data || !data.length) return;
+  const count = data.length;
+  const first = data[0];
+  showNotification(
+    '📅 Studio Ceola — Agenda do dia',
+    `Você tem ${count} agendamento(s) hoje!\nPrimeiro: ${first.time_start}h — ${first.clients?.name}`
+  );
+  toast(`🔔 ${count} agendamento(s) hoje — ${first.clients?.name} às ${first.time_start}`, '');
+}
+
+async function notifDemo() {
+  const todayS = toDS(new Date());
+  const { data } = await sb.from('appointments')
+    .select('time_start, clients(name), services(name)')
+    .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
+    .order('time_start');
+  if (data && data.length) {
+    showNotification('📅 Studio Ceola', `${data.length} agendamento(s) hoje!\n${data.map(a=>`${a.time_start}h ${a.clients?.name}`).join('\n')}`);
+    toast(`🔔 ${data.length} agendamento(s) hoje`, '');
+  } else {
+    showNotification('📅 Studio Ceola', 'Nenhum agendamento para hoje 🌸');
     toast('📅 Sem agendamentos hoje');
   }
 }
@@ -1163,12 +2020,11 @@ document.querySelectorAll('.movl').forEach(o=>o.addEventListener('click',e=>{if(
 // ─── START ───
 init();
 
-// Notification check on load
-setTimeout(async()=>{
-  const todayS=toDS(new Date());
-  const{data}=await sb.from('appointments').select('id').eq('date',todayS).eq('type','appointment').neq('status','cancelled');
-  if(data&&data.length) toast(`🔔 Você tem ${data.length} agendamento(s) hoje!`);
-},2500);
+// Notificação ao abrir o app
+setTimeout(checkTodayNotifications, 2000);
+
+// Verificar notificações a cada 30 minutos enquanto o app estiver aberto
+setInterval(checkTodayNotifications, 30 * 60 * 1000);
 </script>
 </body>
 </html>
