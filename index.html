@@ -2644,6 +2644,12 @@ function showApp() {
   document.getElementById('mainApp').style.flexDirection = 'column';
   document.getElementById('mainApp').style.height = '100vh';
   init();
+  // Notificação ao abrir o app
+  setTimeout(checkTodayNotifications, 2000);
+  // Verifica próximos clientes a cada minuto
+  setInterval(checkUpcomingAppointments, 60 * 1000);
+  // Reload da agenda do dia a cada 30 min
+  setInterval(checkTodayNotifications, 30 * 60 * 1000);
 }
 
 async function doLogout() {
@@ -2656,9 +2662,12 @@ async function doLogout() {
 
 // Check session on load
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) { showApp(); }
-  // else login screen stays visible
+  try {
+    const res = await sb.auth.getSession();
+    if (res && res.data && res.data.session) { showApp(); }
+  } catch(e) {
+    console.warn('Auth check:', e);
+  }
 })();
 
 // ═══════════════════════════════════════════════════════
@@ -2714,17 +2723,9 @@ async function seedServices() {
   await sb.from('services').insert(toInsert);
 }
 
-// ─── START ───
-init();
+// ─── START — só roda após login via showApp() ───
+// (init() é chamado dentro de showApp())
 
-// Notificação ao abrir o app
-setTimeout(checkTodayNotifications, 2000);
-
-// Verifica próximos clientes a cada minuto
-setInterval(checkUpcomingAppointments, 60 * 1000);
-
-// Reload da agenda do dia a cada 30 min
-setInterval(checkTodayNotifications, 30 * 60 * 1000);
 </script>
 </body>
 </html>
