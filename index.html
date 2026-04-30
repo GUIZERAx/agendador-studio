@@ -359,6 +359,33 @@ input[type=file]{display:none;}
 .msgtpl-send{flex:1;padding:7px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;transition:.2s;}
 .msgtpl-send:hover{background:#1ea855;}
 .msgtpl-del{padding:7px 10px;background:#ffeef0;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;}
+
+/* ── MAINTENANCE ── */
+.maint-info{background:var(--nude);border-radius:10px;padding:10px 13px;margin-bottom:10px;display:none;border-left:3px solid var(--acc);}
+.maint-info.show{display:block;}
+.maint-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;}
+.maint-label{color:var(--gray);}
+.maint-val{font-weight:700;color:var(--dark);}
+.maint-price-box{background:#fff;border:2px solid var(--p);border-radius:12px;padding:10px 14px;text-align:center;margin-bottom:10px;display:none;}
+.maint-price-box.show{display:block;}
+.maint-price-box .mpl{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;}
+.maint-price-box .mpv{font-size:24px;font-weight:700;color:var(--p);}
+.maint-price-box .mpo{font-size:11px;color:var(--gray);text-decoration:line-through;margin-top:2px;}
+.maint-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:4px;}
+.maint-badge.orange{background:#fff3e0;color:#e65100;}
+.maint-badge.green{background:#e8f5e9;color:#2e7d32;}
+.maint-badge.pink{background:var(--pl);color:var(--pd);}
+
+/* ── HISTORY ── */
+.hist-entry{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh2);border-left:4px solid var(--p);position:relative;}
+.hist-entry.is-maint{border-left-color:#e65100;}
+.hist-date{font-size:11px;color:var(--gray);margin-bottom:3px;}
+.hist-svc{font-size:14px;font-weight:700;}
+.hist-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:5px;}
+.hist-price{font-size:13px;font-weight:700;color:var(--p);}
+.hist-tag{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.hist-tag.m{background:#fff3e0;color:#e65100;}
+.hist-tag.n{background:var(--pl);color:var(--pd);}
 </style>
 </head>
 <body>
@@ -619,7 +646,17 @@ input[type=file]{display:none;}
         <label>Serviço</label>
         <div class="svcsel" id="svcsel"></div>
       </div>
-      <div class="fg"><label>Observação</label><textarea id="aobs" placeholder="Observação especial..."></textarea></div>
+      <!-- MANUTENÇÃO INFO -->
+      <div class="maint-info" id="maintInfo">
+        <div class="maint-row"><span class="maint-label">📅 Último atendimento</span><span class="maint-val" id="maintLastDate">—</span></div>
+        <div class="maint-row"><span class="maint-label">⏳ Dias desde o último</span><span class="maint-val" id="maintDays">—</span></div>
+        <div class="maint-row"><span class="maint-label">📋 Tipo</span><span class="maint-val" id="maintTipo">—</span></div>
+      </div>
+      <div class="maint-price-box" id="maintPriceBox">
+        <div class="mpl" id="maintPriceLabel">Preço de Manutenção</div>
+        <div class="mpv" id="maintPriceVal">—</div>
+        <div class="mpo" id="maintPriceOrig">—</div>
+      </div>
       <div class="fg">
         <label>Forma de Pagamento</label>
         <div class="pmchips">
@@ -647,7 +684,16 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ─── MODAL SERVIÇO ─── -->
+<!-- ─── MODAL HISTÓRICO ─── -->
+<div class="movl" id="mHist">
+  <div class="modal">
+    <div class="mhndl"></div>
+    <div class="mtit" id="histTitle">Histórico</div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:12px;" id="histSub"></div>
+    <div id="histList"></div>
+    <button class="btns" onclick="closeModal('mHist')">Fechar</button>
+  </div>
+</div>
 <div class="movl" id="mSvc">
   <div class="modal">
     <div class="mhndl"></div>
@@ -1295,12 +1341,14 @@ async function confirmDel(id, msg) {
 function openApptModal() {
   document.getElementById('adate').value = toDS(selDate);
   swTab('a');
-  selCliId = null; selSvcId = null; curPm = null;
+  selCliId = null; selSvcId = null; curPm = null; maintPrice = null;
   clrCli();
   document.getElementById('aobs').value = '';
   document.getElementById('qcliToggle').style.display = 'none';
   document.getElementById('qclibox').style.display = 'none';
   document.querySelectorAll('.pmchip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('maintInfo').classList.remove('show');
+  document.getElementById('maintPriceBox').classList.remove('show');
   renderSvcSel();
   document.getElementById('mAppt').classList.add('op');
 }
@@ -1325,7 +1373,11 @@ function renderSvcSel() {
       ? `<div class="sthumb"><img src="${s.photo_url}" alt=""></div>`
       : `<div class="sthumb">${s.emoji||'✨'}</div>`;
     el.innerHTML = `${thumb}<div><div class="svoptnm">${s.name}</div><div class="svoptpr">R$ ${Number(s.price).toFixed(2)}</div></div>`;
-    el.onclick = () => { selSvcId = s.id; renderSvcSel(); };
+    el.onclick = () => {
+      selSvcId = s.id;
+      renderSvcSel();
+      checkMaintenance();
+    };
     c.appendChild(el);
   });
 }
@@ -1386,6 +1438,128 @@ function pickCli(c) {
   document.getElementById('selcliname').textContent = c.name;
   document.getElementById('selcliph').textContent = c.phone;
   document.getElementById('selclibox').style.display='block';
+  // Check maintenance when client is picked
+  if (selSvcId) checkMaintenance();
+}
+
+// ═══════════════════════════════════════════════════════
+//  MAINTENANCE DETECTION
+// ═══════════════════════════════════════════════════════
+let maintPrice = null; // null = use normal price
+
+async function checkMaintenance() {
+  const info = document.getElementById('maintInfo');
+  const priceBox = document.getElementById('maintPriceBox');
+  maintPrice = null;
+
+  if (!selCliId || !selSvcId) {
+    info.classList.remove('show');
+    priceBox.classList.remove('show');
+    return;
+  }
+
+  const svc = services.find(s => s.id === selSvcId);
+  if (!svc) return;
+
+  // Get last appointment for this client + same service
+  const { data } = await sb.from('appointments')
+    .select('date, is_maintenance, custom_price, services(name)')
+    .eq('client_id', selCliId)
+    .eq('service_id', selSvcId)
+    .eq('type', 'appointment')
+    .neq('status', 'cancelled')
+    .order('date', { ascending: false })
+    .limit(1);
+
+  if (!data || !data.length) {
+    // No previous appointment — first time
+    info.classList.remove('show');
+    priceBox.classList.remove('show');
+    return;
+  }
+
+  const last = data[0];
+  const lastDate = new Date(last.date + 'T12:00:00');
+  const today = new Date();
+  const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+
+  info.classList.add('show');
+  document.getElementById('maintLastDate').textContent = fmtDS(last.date);
+  document.getElementById('maintDays').textContent = diffDays + ' dias atrás';
+
+  if (diffDays <= 15 && svc.maintenance_15) {
+    // Maintenance 15 days
+    maintPrice = svc.maintenance_15;
+    document.getElementById('maintTipo').textContent = '🔄 Manutenção (até 15 dias)';
+    document.getElementById('maintTipo').style.color = '#e65100';
+    priceBox.classList.add('show');
+    document.getElementById('maintPriceLabel').textContent = '🔄 Preço de Manutenção (15 dias)';
+    document.getElementById('maintPriceVal').textContent = `R$ ${maintPrice.toFixed(2)}`;
+    document.getElementById('maintPriceOrig').textContent = `Preço normal: R$ ${Number(svc.price).toFixed(2)}`;
+  } else if (diffDays <= 20 && svc.maintenance_20) {
+    // Maintenance 20 days
+    maintPrice = svc.maintenance_20;
+    document.getElementById('maintTipo').textContent = '🔄 Manutenção (até 20 dias)';
+    document.getElementById('maintTipo').style.color = '#e65100';
+    priceBox.classList.add('show');
+    document.getElementById('maintPriceLabel').textContent = '🔄 Preço de Manutenção (20 dias)';
+    document.getElementById('maintPriceVal').textContent = `R$ ${maintPrice.toFixed(2)}`;
+    document.getElementById('maintPriceOrig').textContent = `Preço normal: R$ ${Number(svc.price).toFixed(2)}`;
+  } else {
+    // More than 20 days — full price
+    maintPrice = null;
+    document.getElementById('maintTipo').textContent = '✨ Serviço completo (preço normal)';
+    document.getElementById('maintTipo').style.color = '#2e7d32';
+    priceBox.classList.remove('show');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY MODAL
+// ═══════════════════════════════════════════════════════
+async function openHistory(e, clientId) {
+  e.stopPropagation();
+  const cli = clients.find(c => c.id === clientId);
+  document.getElementById('histTitle').textContent = `📋 ${cli?.name || 'Histórico'}`;
+  document.getElementById('histSub').textContent = 'Todos os atendimentos';
+  document.getElementById('histList').innerHTML = '<div class="loader"><div class="spin"></div></div>';
+  document.getElementById('mHist').classList.add('op');
+
+  const { data, error } = await sb.from('appointments')
+    .select('*, services(name, emoji, price)')
+    .eq('client_id', clientId)
+    .eq('type', 'appointment')
+    .neq('status', 'cancelled')
+    .order('date', { ascending: false });
+
+  const list = document.getElementById('histList');
+  if (error || !data || !data.length) {
+    list.innerHTML = '<div class="hist-empty">Nenhum atendimento encontrado 🌸</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  data.forEach(a => {
+    const isMaint = a.is_maintenance;
+    const price = a.custom_price || a.services?.price;
+    const svcName = a.services?.name || 'Serviço';
+    const svcEmoji = a.services?.emoji || '✨';
+    const pm = { pix: 'PIX', dinheiro: '💵 Dinheiro', cartao: '💳 Cartão' }[a.payment_method] || '—';
+
+    const card = document.createElement('div');
+    card.className = 'hist-entry' + (isMaint ? ' is-maint' : '');
+    card.innerHTML = `
+      <div class="hist-date">${fmtDS(a.date)} às ${a.time_start || '--'}</div>
+      <div class="hist-svc">${svcEmoji} ${svcName}</div>
+      <div class="hist-bottom">
+        <div class="hist-price">R$ ${price ? Number(price).toFixed(2) : '—'}</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <span class="hist-tag ${isMaint?'m':'n'}">${isMaint?'🔄 Manutenção':'✨ Completo'}</span>
+          <span style="font-size:9px;color:var(--gray);">${pm}</span>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
 }
 
 function clrCli() {
@@ -1401,10 +1575,15 @@ async function saveAppt() {
   const time = document.getElementById('atime').value;
   if (!date || !time) { toast('⚠️ Preencha data e horário!'); return; }
 
+  const svc = services.find(s => s.id === selSvcId);
+  const finalPrice = maintPrice !== null ? maintPrice : (svc?.price || null);
+  const isMaint = maintPrice !== null;
+
   const { error } = await sb.from('appointments').insert({
     type: 'appointment', client_id: selCliId, service_id: selSvcId,
     date, time_start: time, notes: document.getElementById('aobs').value,
-    status: 'confirmed', whatsapp_sent: false, payment_method: curPm
+    status: 'confirmed', whatsapp_sent: false, payment_method: curPm,
+    custom_price: finalPrice, is_maintenance: isMaint
   });
   if (error) { toast('❌ Erro ao salvar: ' + error.message, 'er'); return; }
 
@@ -1604,7 +1783,10 @@ async function renderClients() {
         <div class="cph">📱 ${c.phone}</div>
         ${apptCount?`<div class="cap">${apptCount} agendamento(s)</div>`:''}
       </div>
-      <button class="wabtn" onclick="sendWADirect(event,'${c.id}')" title="WhatsApp">💬</button>`;
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="wabtn" onclick="openHistory(event,'${c.id}')" title="Histórico" style="background:var(--pl);color:var(--pd);">📋</button>
+        <button class="wabtn" onclick="sendWADirect(event,'${c.id}')" title="WhatsApp">💬</button>
+      </div>`;
     card.onclick = (e) => { if(e.target.closest('.wabtn')) return; editCli(c.id); };
     list.appendChild(card);
   });
@@ -2179,14 +2361,68 @@ async function checkTodayNotifications() {
   toast(`🔔 ${count} agendamento(s) hoje — ${first.clients?.name} às ${first.time_start}`, '');
 }
 
+// ═══════════════════════════════════════════════════════
+//  NOTIFICAÇÃO 30 MIN ANTES DO CLIENTE
+// ═══════════════════════════════════════════════════════
+const notifiedAppts = new Set(); // evita notificar 2x
+
+async function checkUpcomingAppointments() {
+  const todayS = toDS(new Date());
+  const now = new Date();
+  const { data } = await sb.from('appointments')
+    .select('id, time_start, clients(name), services(name, emoji)')
+    .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
+    .order('time_start');
+
+  if (!data || !data.length) return;
+
+  data.forEach(a => {
+    if (notifiedAppts.has(a.id)) return;
+    if (!a.time_start) return;
+
+    const [h, m] = a.time_start.split(':').map(Number);
+    const apptTime = new Date();
+    apptTime.setHours(h, m, 0, 0);
+
+    const diffMs = apptTime - now;
+    const diffMin = Math.floor(diffMs / 60000);
+
+    // Notifica entre 25 e 35 minutos antes
+    if (diffMin >= 25 && diffMin <= 35) {
+      notifiedAppts.add(a.id);
+      const clientName = a.clients?.name || 'Cliente';
+      const svcName = a.services?.name || 'Serviço';
+      const svcEmoji = a.services?.emoji || '✨';
+      showNotification(
+        `⏰ Próximo atendimento em ${diffMin} min!`,
+        `${svcEmoji} ${clientName} — ${svcName} às ${a.time_start}`
+      );
+      toast(`⏰ ${clientName} às ${a.time_start} — em ${diffMin} min!`, '');
+    }
+
+    // Notifica na hora exata (entre -2 e +2 min)
+    if (diffMin >= -2 && diffMin <= 2 && !notifiedAppts.has(a.id + '_now')) {
+      notifiedAppts.add(a.id + '_now');
+      const clientName = a.clients?.name || 'Cliente';
+      const svcName = a.services?.name || 'Serviço';
+      showNotification(
+        `💅 Agora! ${a.time_start}h`,
+        `${clientName} — ${svcName}`
+      );
+      toast(`💅 ${clientName} chegando agora! ${a.time_start}h`, '');
+    }
+  });
+}
+
 async function notifDemo() {
   const todayS = toDS(new Date());
   const { data } = await sb.from('appointments')
-    .select('time_start, clients(name), services(name)')
+    .select('time_start, clients(name), services(name, emoji)')
     .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
     .order('time_start');
   if (data && data.length) {
-    showNotification('📅 Studio Ceola', `${data.length} agendamento(s) hoje!\n${data.map(a=>`${a.time_start}h ${a.clients?.name}`).join('\n')}`);
+    const lista = data.map(a=>`${a.time_start}h — ${a.clients?.name} (${a.services?.emoji||'✨'} ${a.services?.name||''})`).join('\n');
+    showNotification(`📅 Agenda de hoje — ${data.length} cliente(s)`, lista);
     toast(`🔔 ${data.length} agendamento(s) hoje`, '');
   } else {
     showNotification('📅 Studio Ceola', 'Nenhum agendamento para hoje 🌸');
@@ -2484,7 +2720,10 @@ init();
 // Notificação ao abrir o app
 setTimeout(checkTodayNotifications, 2000);
 
-// Verificar notificações a cada 30 minutos enquanto o app estiver aberto
+// Verifica próximos clientes a cada minuto
+setInterval(checkUpcomingAppointments, 60 * 1000);
+
+// Reload da agenda do dia a cada 30 min
 setInterval(checkTodayNotifications, 30 * 60 * 1000);
 </script>
 </body>
