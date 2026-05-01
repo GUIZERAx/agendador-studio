@@ -2655,14 +2655,13 @@ async function doLogin() {
     });
     var json = await res.json();
     if (!res.ok || !json.access_token) {
-      var errMsg = json.error_description || json.msg || json.message || json.error || 'E-mail ou senha incorretos.';
-      // Traduz erros comuns do Supabase
-      if (errMsg.toLowerCase().includes('not confirmed') || errMsg.toLowerCase().includes('email')) {
-        errMsg = 'E-mail não confirmado. Verifique sua caixa de entrada.';
-      } else if (errMsg.toLowerCase().includes('invalid') || errMsg.toLowerCase().includes('credentials')) {
-        errMsg = 'E-mail ou senha incorretos.';
-      }
+      var errMsg = json.error_description || json.error || json.message || JSON.stringify(json);
       err.textContent = errMsg;
+      err.style.fontSize = '13px';
+      err.style.padding = '8px';
+      err.style.background = 'rgba(255,100,100,0.15)';
+      err.style.borderRadius = '8px';
+      alert('Erro Supabase:\n' + errMsg + '\n\nEmail: ' + email);
       btn.disabled = false; btn.textContent = 'Entrar';
       return;
     }
@@ -2670,7 +2669,9 @@ async function doLogin() {
     safeSet(RTOKEN_KEY, json.refresh_token || '');
     showApp(json.access_token);
   } catch(e) {
-    err.textContent = 'Erro de conexão. Verifique a internet.';
+    var msg = 'Erro de conexão: ' + e.message;
+    err.textContent = msg;
+    alert(msg);
     btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
