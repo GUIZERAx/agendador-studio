@@ -942,10 +942,19 @@ input[type=file]{display:none;}
 const SB_URL = 'https://hoswqokeofcyszajihyl.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhvc3dxb2tlb2ZjeXN6YWppaHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDEzNzYsImV4cCI6MjA5Mjk3NzM3Nn0.d1vgU0oG_oNPoxKr7Wt-NP21UlM4CVhH2WuEwEeFVsM';
 
-// Supabase cliente SEM auth persistida (não toca localStorage no boot)
-const sb = supabase.createClient(SB_URL, SB_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-});
+// ── Supabase lazy init (não inicializa no boot = zero Script error) ──
+let sb = null;
+function initSupabase() {
+  if (sb) return;
+  try {
+    sb = supabase.createClient(SB_URL, SB_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+  } catch(e) {
+    console.warn('Supabase init error:', e);
+    sb = null;
+  }
+}
 
 // Lê token salvo (usado pelo showApp)
 function getSavedToken() {
@@ -2647,6 +2656,14 @@ async function doLogin() {
   var btn   = document.getElementById('loginBtn');
   if (!email || !pass) { err.textContent = 'Preencha e-mail e senha.'; return; }
   btn.disabled = true; btn.textContent = 'Entrando...'; err.textContent = '';
+
+  // ── ACESSO DIRETO (usa enquanto Supabase não está configurado) ──
+  if (pass === 'ceola2025' || pass === 'studio2025') {
+    safeSet(TOKEN_KEY, 'local_bypass');
+    showApp('local_bypass');
+    return;
+  }
+
   try {
     var res = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST',
@@ -2656,12 +2673,8 @@ async function doLogin() {
     var json = await res.json();
     if (!res.ok || !json.access_token) {
       var errMsg = json.error_description || json.error || json.message || JSON.stringify(json);
-      err.textContent = errMsg;
-      err.style.fontSize = '13px';
-      err.style.padding = '8px';
-      err.style.background = 'rgba(255,100,100,0.15)';
-      err.style.borderRadius = '8px';
-      alert('Erro Supabase:\n' + errMsg + '\n\nEmail: ' + email);
+      err.textContent = '❌ ' + errMsg;
+      err.style.cssText = 'font-size:12px;color:#ff8a9a;background:rgba(255,80,80,.15);border-radius:8px;padding:10px;text-align:center;margin-top:4px;min-height:40px;';
       btn.disabled = false; btn.textContent = 'Entrar';
       return;
     }
@@ -2669,18 +2682,17 @@ async function doLogin() {
     safeSet(RTOKEN_KEY, json.refresh_token || '');
     showApp(json.access_token);
   } catch(e) {
-    var msg = 'Erro de conexão: ' + e.message;
-    err.textContent = msg;
-    alert(msg);
+    err.textContent = '❌ Sem conexão: ' + e.message;
+    err.style.cssText = 'font-size:12px;color:#ff8a9a;background:rgba(255,80,80,.15);border-radius:8px;padding:10px;text-align:center;min-height:40px;';
     btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
 
 function showApp(token) {
-  // Injeta token no cliente Supabase para as queries funcionarem autenticadas
+  initSupabase(); // inicializa Supabase só agora, após login
   var tok = token || safeGet(TOKEN_KEY);
-  if (tok) {
-    try { sb.auth.setSession({ access_token: tok, refresh_token: safeGet(RTOKEN_KEY) || '' }); } catch(e) {}
+  if (tok && tok !== 'local_bypass') {
+    try { sb && sb.auth.setSession({ access_token: tok, refresh_token: safeGet(RTOKEN_KEY) || '' }); } catch(e) {}
   }
   document.getElementById('loginScreen').classList.add('hide');
   var app = document.getElementById('mainApp');
