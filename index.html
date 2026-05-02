@@ -1031,7 +1031,21 @@ SBQuery.prototype.then = function(ok, fail) {
   return fetch(self._url(), {headers: getHeaders()})
     .then(function(r) {
       return r.json().then(function(d) {
-        if (!r.ok) return {data: null, error: d};
+        if (!r.ok) {
+          // JWT expirado — faz refresh ou desloga
+          if (r.status === 401 || (d && (d.message||'').toLowerCase().includes('jwt'))) {
+            return tryRefreshToken().then(function(ok2) {
+              if (!ok2) { doLogout(); return {data:null, error:{message:'Sessão expirada. Faça login novamente.'}}; }
+              // retry once after refresh
+              return fetch(self._url(), {headers: getHeaders()}).then(function(r2){
+                return r2.json().then(function(d2){
+                  return r2.ok ? {data: Array.isArray(d2)?(self._single?d2[0]||null:d2):d2, error:null} : {data:null,error:d2};
+                });
+              });
+            });
+          }
+          return {data: null, error: d};
+        }
         if (Array.isArray(d)) return {data: self._single ? (d[0]||null) : d, error: null};
         return {data: d, error: null};
       });
@@ -2777,6 +2791,23 @@ function safeGet(k)    { try { return localStorage.getItem(k); }  catch(e){ retu
 function safeSet(k, v) { try { localStorage.setItem(k, v); }      catch(e){} }
 function safeDel(k)    { try { localStorage.removeItem(k); }       catch(e){} }
 
+async function tryRefreshToken() {
+  var rt = safeGet(RTOKEN_KEY);
+  if (!rt || rt === 'bypass') return false;
+  try {
+    var res = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: rt })
+    });
+    var json = await res.json();
+    if (!res.ok || !json.access_token) return false;
+    safeSet(TOKEN_KEY, json.access_token);
+    safeSet(RTOKEN_KEY, json.refresh_token || rt);
+    return true;
+  } catch(e) { return false; }
+}
+
 async function doLogin() {
   var pass  = (document.getElementById('loginPass').value  || '').trim();
   var email = (document.getElementById('loginEmail').value || '').trim();
@@ -2825,7 +2856,7 @@ async function showApp(token) {
   setInterval(checkTodayNotifications, 1800000);
 }
 
-function doLogout() {
+function doLogout(expired) {
   safeDel(TOKEN_KEY); safeDel(RTOKEN_KEY);
   document.getElementById('loginScreen').classList.remove('hide');
   document.getElementById('mainApp').style.display = 'none';
@@ -2833,7 +2864,11 @@ function doLogout() {
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Entrar';
-  document.getElementById('loginErr').textContent = '';
+  if (expired) {
+    document.getElementById('loginErr').textContent = '⚠️ Sessão expirada. Faça login novamente.';
+  } else {
+    document.getElementById('loginErr').textContent = '';
+  }
 }
 
 // Verifica sessão salva
