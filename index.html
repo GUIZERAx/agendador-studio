@@ -56,8 +56,9 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--dark);height
 .cover-overlay-lbl small{color:rgba(255,255,255,.85);font-size:11px;font-weight:600;margin-top:4px;}
 
 /* ── NAV ── */
-.nav{display:flex;background:#fff;border-bottom:1px solid var(--gl);flex-shrink:0;}
-.ntab{flex:1;padding:13px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;letter-spacing:.4px;text-transform:uppercase;}
+.nav{display:flex;background:#fff;border-bottom:1px solid var(--gl);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.ntab{flex:0 0 auto;padding:13px 16px;text-align:center;font-size:11px;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;}
 .ntab.on{color:var(--p);border-bottom-color:var(--p);}
 
 /* ── SCREENS ── */
@@ -1019,7 +1020,7 @@ SBQuery.prototype.order = function(c,o) {
 SBQuery.prototype.limit = function(n)   { this._lim = n; return this; };
 SBQuery.prototype.single= function()    { this._single = true; return this; };
 SBQuery.prototype._url = function() {
-  var u = SB_URL+'/rest/v1/'+this._table+'?select='+encodeURIComponent(this._sel);
+  var u = SB_URL+'/rest/v1/'+this._table+'?select='+this._sel;
   if (this._filters.length) u += '&'+this._filters.join('&');
   if (this._order) u += '&order='+this._order;
   if (this._lim) u += '&limit='+this._lim;
@@ -2673,8 +2674,15 @@ async function renderCaixa() {
     .order('date', { ascending: false })
     .order('time_start', { ascending: false });
 
-  if (error || !data) {
-    document.getElementById('finList').innerHTML = '<div class="empty"><div class="em">⚠️</div><p>Erro ao carregar</p></div>';
+  if (error) {
+    document.getElementById('finList').innerHTML = '<div class="empty"><div class="em">⚠️</div><p>Erro ao carregar: '+(error.message||JSON.stringify(error))+'</p></div>';
+    return;
+  }
+  if (!data || !data.length) {
+    document.getElementById('finList').innerHTML = '<div class="empty"><div class="em">💸</div><p>Nenhum atendimento este mês ainda.</p></div>';
+    // Zero out summary cards
+    ['finHoje','finSemana','finMes'].forEach(id => document.getElementById(id).textContent = 'R$ 0,00');
+    ['finHojeCount','finSemanaCount','finMesCount'].forEach(id => document.getElementById(id).textContent = '0 atendimento(s)');
     return;
   }
 
