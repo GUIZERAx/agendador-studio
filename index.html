@@ -975,11 +975,19 @@ function SBQuery(table) {
   this._single = false;
 }
 SBQuery.prototype.select = function(s) { this._sel = s||'*'; return this; };
-SBQuery.prototype.eq = function(c,v) { this._filters.push(c+'=eq.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.neq = function(c,v) { this._filters.push(c+'=neq.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.eq    = function(c,v) { this._filters.push(c+'=eq.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.neq   = function(c,v) { this._filters.push(c+'=neq.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.gte   = function(c,v) { this._filters.push(c+'=gte.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.lte   = function(c,v) { this._filters.push(c+'=lte.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.gt    = function(c,v) { this._filters.push(c+'=gt.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.lt    = function(c,v) { this._filters.push(c+'=lt.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.like  = function(c,v) { this._filters.push(c+'=like.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.ilike = function(c,v) { this._filters.push(c+'=ilike.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.is    = function(c,v) { this._filters.push(c+'=is.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.in    = function(c,v) { this._filters.push(c+'=in.('+v.map(encodeURIComponent).join(',')+')'); return this; };
 SBQuery.prototype.order = function(c,o) { this._order = c+(o&&o.ascending===false?'.desc':'.asc'); return this; };
-SBQuery.prototype.limit = function(n) { this._lim = n; return this; };
-SBQuery.prototype.single = function() { this._single = true; return this; };
+SBQuery.prototype.limit = function(n)   { this._lim = n; return this; };
+SBQuery.prototype.single= function()    { this._single = true; return this; };
 SBQuery.prototype._url = function() {
   var u = SB_URL+'/rest/v1/'+this._table+'?select='+encodeURIComponent(this._sel);
   if (this._filters.length) u += '&'+this._filters.join('&');
@@ -1694,13 +1702,13 @@ async function saveAppt() {
 
   // Notificação no celular
   const cli = clients.find(c=>c.id===selCliId);
-  const svc = services.find(s=>s.id===selSvcId);
+  const svcNotif = services.find(s=>s.id===selSvcId);
   const apptDate = document.getElementById('adate').value;
   const apptTime = document.getElementById('atime').value;
 
   showNotification(
     '✅ Agendamento confirmado!',
-    `${cli?.name} — ${svc?.name}\n${fmtDS(apptDate)} às ${apptTime}`
+    `${cli?.name} — ${svcNotif?.name}\n${fmtDS(apptDate)} às ${apptTime}`
   );
 
   // Abrir WhatsApp automaticamente com template de confirmação
@@ -1712,8 +1720,8 @@ async function saveAppt() {
       .replace(/{nome}/g, cli.name)
       .replace(/{data}/g, fmtDS(apptDate))
       .replace(/{hora}/g, apptTime)
-      .replace(/{servico}/g, svc?.name || 'seu serviço')
-      .replace(/{preco}/g, svc ? `R$ ${Number(svc.price).toFixed(2)}` : '')
+      .replace(/{servico}/g, svcNotif?.name || 'seu serviço')
+      .replace(/{preco}/g, svcNotif ? `R$ ${Number(svcNotif.price).toFixed(2)}` : '')
       .replace(/{studio}/g, studioName);
     const phone = cli.phone.replace(/\D/g,'');
     setTimeout(() => {
