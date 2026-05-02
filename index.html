@@ -11,8 +11,12 @@
 <meta name="apple-mobile-web-app-title" content="Studio Ceola">
 <link rel="apple-touch-icon" href="https://i.imgur.com/Vya0MxK.png">
 <link id="pwaManifest" rel="manifest">
+<script>
+// Suprime Script error. cross-origin (Safari quirk)
+window.onerror = function(m){ return String(m).indexOf('Script error') >= 0; };
+window.addEventListener('unhandledrejection', function(e){ e.preventDefault(); });
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <style>
 :root {
   --p: #c9506a; --pd: #9b3050; --pl: #f7e8ec;
@@ -936,25 +940,100 @@ input[type=file]{display:none;}
 </div><!-- end mainApp -->
 
 <script>
+// Suprime erros cross-origin no Safari (Script error.)
+window.onerror = function(){ return true; };
+window.addEventListener('unhandledrejection', function(e){ e.preventDefault(); });
 // ═══════════════════════════════════════════════════════
-//  SUPABASE — sem SDK de auth, evita Script error no Safari
+//  SUPABASE REST — sem SDK, sem CDN, zero Script error
 // ═══════════════════════════════════════════════════════
 const SB_URL = 'https://hoswqokeofcyszajihyl.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhvc3dxb2tlb2ZjeXN6YWppaHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDEzNzYsImV4cCI6MjA5Mjk3NzM3Nn0.d1vgU0oG_oNPoxKr7Wt-NP21UlM4CVhH2WuEwEeFVsM';
 
-// ── Supabase lazy init (não inicializa no boot = zero Script error) ──
-let sb = null;
-function initSupabase() {
-  if (sb) return;
-  try {
-    sb = supabase.createClient(SB_URL, SB_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    });
-  } catch(e) {
-    console.warn('Supabase init error:', e);
-    sb = null;
-  }
+function getHeaders() {
+  var tok = safeGet('sc_tok') || '';
+  return {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + (tok && tok !== 'bypass' ? tok : SB_KEY),
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
 }
+
+// Wrapper que imita a API do Supabase SDK
+var sb = {
+  from: function(table) {
+    return new SBQuery(table);
+  }
+};
+
+function SBQuery(table) {
+  this._table = table;
+  this._sel = '*';
+  this._filters = [];
+  this._order = null;
+  this._lim = null;
+  this._single = false;
+}
+SBQuery.prototype.select = function(s) { this._sel = s||'*'; return this; };
+SBQuery.prototype.eq = function(c,v) { this._filters.push(c+'=eq.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.neq = function(c,v) { this._filters.push(c+'=neq.'+encodeURIComponent(v)); return this; };
+SBQuery.prototype.order = function(c,o) { this._order = c+(o&&o.ascending===false?'.desc':'.asc'); return this; };
+SBQuery.prototype.limit = function(n) { this._lim = n; return this; };
+SBQuery.prototype.single = function() { this._single = true; return this; };
+SBQuery.prototype._url = function() {
+  var u = SB_URL+'/rest/v1/'+this._table+'?select='+encodeURIComponent(this._sel);
+  if (this._filters.length) u += '&'+this._filters.join('&');
+  if (this._order) u += '&order='+this._order;
+  if (this._lim) u += '&limit='+this._lim;
+  return u;
+};
+SBQuery.prototype.then = function(ok, fail) {
+  var self = this;
+  return fetch(self._url(), {headers: getHeaders()})
+    .then(function(r){ return r.json().then(function(d){
+      if (Array.isArray(d)) return {data: self._single ? d[0]||null : d, error: null};
+      if (d && d.message) return {data: null, error: d};
+      return {data: d, error: null};
+    });})
+    .catch(function(e){ return {data:null, error:e}; })
+    .then(ok, fail);
+};
+SBQuery.prototype.insert = async function(rows) {
+  var body = Array.isArray(rows) ? rows : [rows];
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/'+this._table, {
+      method:'POST', headers:getHeaders(), body:JSON.stringify(body)
+    });
+    var d = await r.json();
+    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
+  } catch(e) { return {data:null,error:e}; }
+};
+SBQuery.prototype.update = async function(obj) {
+  try {
+    var u = SB_URL+'/rest/v1/'+this._table+'?'+this._filters.join('&');
+    var r = await fetch(u, {method:'PATCH', headers:getHeaders(), body:JSON.stringify(obj)});
+    var d = await r.json();
+    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
+  } catch(e) { return {data:null,error:e}; }
+};
+SBQuery.prototype.upsert = async function(rows) {
+  var body = Array.isArray(rows) ? rows : [rows];
+  var h = Object.assign({}, getHeaders(), {'Prefer':'resolution=merge-duplicates,return=representation'});
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/'+this._table, {method:'POST', headers:h, body:JSON.stringify(body)});
+    var d = await r.json();
+    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
+  } catch(e) { return {data:null,error:e}; }
+};
+SBQuery.prototype.delete = async function() {
+  try {
+    var u = SB_URL+'/rest/v1/'+this._table+'?'+this._filters.join('&');
+    var r = await fetch(u, {method:'DELETE', headers:getHeaders()});
+    return r.ok ? {data:null,error:null} : {data:null,error:{message:'delete failed'}};
+  } catch(e) { return {data:null,error:e}; }
+};
+
+async function initSupabase() { /* sb já está pronto, sem SDK */ }
 
 // Lê token salvo (usado pelo showApp)
 function getSavedToken() {
@@ -2640,7 +2719,7 @@ function renderCaixaList() {
 }
 
 // ═══════════════════════════════════════════════════════
-//  AUTH — fetch REST direto (zero SDK auth = zero Script error)
+//  AUTH
 // ═══════════════════════════════════════════════════════
 var TOKEN_KEY  = 'sc_tok';
 var RTOKEN_KEY = 'sc_rtok';
@@ -2650,20 +2729,22 @@ function safeSet(k, v) { try { localStorage.setItem(k, v); }      catch(e){} }
 function safeDel(k)    { try { localStorage.removeItem(k); }       catch(e){} }
 
 async function doLogin() {
-  var email = (document.getElementById('loginEmail').value || '').trim();
   var pass  = (document.getElementById('loginPass').value  || '').trim();
+  var email = (document.getElementById('loginEmail').value || '').trim();
   var err   = document.getElementById('loginErr');
   var btn   = document.getElementById('loginBtn');
-  if (!email || !pass) { err.textContent = 'Preencha e-mail e senha.'; return; }
+  if (!pass) { err.textContent = 'Digite a senha.'; return; }
+
   btn.disabled = true; btn.textContent = 'Entrando...'; err.textContent = '';
 
-  // ── ACESSO DIRETO (usa enquanto Supabase não está configurado) ──
+  // Senha local de acesso direto
   if (pass === 'ceola2025' || pass === 'studio2025') {
-    safeSet(TOKEN_KEY, 'local_bypass');
-    showApp('local_bypass');
+    safeSet(TOKEN_KEY, 'bypass');
+    await showApp('bypass');
     return;
   }
 
+  // Login Supabase
   try {
     var res = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST',
@@ -2672,33 +2753,23 @@ async function doLogin() {
     });
     var json = await res.json();
     if (!res.ok || !json.access_token) {
-      var errMsg = json.error_description || json.error || json.message || JSON.stringify(json);
-      err.textContent = '❌ ' + errMsg;
-      err.style.cssText = 'font-size:12px;color:#ff8a9a;background:rgba(255,80,80,.15);border-radius:8px;padding:10px;text-align:center;margin-top:4px;min-height:40px;';
-      btn.disabled = false; btn.textContent = 'Entrar';
-      return;
+      err.textContent = '❌ ' + (json.error_description || json.error || 'Senha incorreta.');
+      btn.disabled = false; btn.textContent = 'Entrar'; return;
     }
     safeSet(TOKEN_KEY, json.access_token);
     safeSet(RTOKEN_KEY, json.refresh_token || '');
-    showApp(json.access_token);
+    await showApp(json.access_token);
   } catch(e) {
-    err.textContent = '❌ Sem conexão: ' + e.message;
-    err.style.cssText = 'font-size:12px;color:#ff8a9a;background:rgba(255,80,80,.15);border-radius:8px;padding:10px;text-align:center;min-height:40px;';
+    err.textContent = '❌ Sem conexão.';
     btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
 
-function showApp(token) {
-  initSupabase(); // inicializa Supabase só agora, após login
-  var tok = token || safeGet(TOKEN_KEY);
-  if (tok && tok !== 'local_bypass') {
-    try { sb && sb.auth.setSession({ access_token: tok, refresh_token: safeGet(RTOKEN_KEY) || '' }); } catch(e) {}
-  }
+async function showApp(token) {
+  await initSupabase();
   document.getElementById('loginScreen').classList.add('hide');
   var app = document.getElementById('mainApp');
-  app.style.display = 'flex';
-  app.style.flexDirection = 'column';
-  app.style.height = '100vh';
+  app.style.display = 'flex'; app.style.flexDirection = 'column'; app.style.height = '100vh';
   init();
   setTimeout(checkTodayNotifications, 3000);
   setInterval(checkUpcomingAppointments, 60000);
@@ -2706,18 +2777,17 @@ function showApp(token) {
 }
 
 function doLogout() {
-  safeDel(TOKEN_KEY);
-  safeDel(RTOKEN_KEY);
+  safeDel(TOKEN_KEY); safeDel(RTOKEN_KEY);
   document.getElementById('loginScreen').classList.remove('hide');
   document.getElementById('mainApp').style.display = 'none';
-  document.getElementById('loginEmail').value = '';
   document.getElementById('loginPass').value = '';
+  document.getElementById('loginEmail').value = '';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Entrar';
   document.getElementById('loginErr').textContent = '';
 }
 
-// Verifica token salvo — síncrono, sem SDK auth, sem Script error
+// Verifica sessão salva
 (function() {
   var tok = safeGet(TOKEN_KEY);
   if (tok) { showApp(tok); }
