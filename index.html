@@ -1029,12 +1029,14 @@ SBQuery.prototype._url = function() {
 SBQuery.prototype.then = function(ok, fail) {
   var self = this;
   return fetch(self._url(), {headers: getHeaders()})
-    .then(function(r){ return r.json().then(function(d){
-      if (Array.isArray(d)) return {data: self._single ? d[0]||null : d, error: null};
-      if (d && d.message) return {data: null, error: d};
-      return {data: d, error: null};
-    });})
-    .catch(function(e){ return {data:null, error:e}; })
+    .then(function(r) {
+      return r.json().then(function(d) {
+        if (!r.ok) return {data: null, error: d};
+        if (Array.isArray(d)) return {data: self._single ? (d[0]||null) : d, error: null};
+        return {data: d, error: null};
+      });
+    })
+    .catch(function(e) { return {data: null, error: {message: e.message}}; })
     .then(ok, fail);
 };
 SBQuery.prototype.insert = async function(rows) {
@@ -1044,16 +1046,16 @@ SBQuery.prototype.insert = async function(rows) {
       method:'POST', headers:getHeaders(), body:JSON.stringify(body)
     });
     var d = await r.json();
-    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
-  } catch(e) { return {data:null,error:e}; }
+    return r.ok ? {data: Array.isArray(d)?d:[d], error:null} : {data:null, error:d};
+  } catch(e) { return {data:null, error:{message:e.message}}; }
 };
 SBQuery.prototype.update = async function(obj) {
   try {
-    var u = SB_URL+'/rest/v1/'+this._table+'?'+this._filters.join('&');
+    var u = SB_URL+'/rest/v1/'+this._table+(this._filters.length?'?'+this._filters.join('&'):'');
     var r = await fetch(u, {method:'PATCH', headers:getHeaders(), body:JSON.stringify(obj)});
     var d = await r.json();
-    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
-  } catch(e) { return {data:null,error:e}; }
+    return r.ok ? {data:d, error:null} : {data:null, error:d};
+  } catch(e) { return {data:null, error:{message:e.message}}; }
 };
 SBQuery.prototype.upsert = async function(rows) {
   var body = Array.isArray(rows) ? rows : [rows];
@@ -1061,15 +1063,15 @@ SBQuery.prototype.upsert = async function(rows) {
   try {
     var r = await fetch(SB_URL+'/rest/v1/'+this._table, {method:'POST', headers:h, body:JSON.stringify(body)});
     var d = await r.json();
-    return Array.isArray(d) ? {data:d,error:null} : {data:null,error:d};
-  } catch(e) { return {data:null,error:e}; }
+    return r.ok ? {data:d, error:null} : {data:null, error:d};
+  } catch(e) { return {data:null, error:{message:e.message}}; }
 };
 SBQuery.prototype.delete = async function() {
   try {
-    var u = SB_URL+'/rest/v1/'+this._table+'?'+this._filters.join('&');
+    var u = SB_URL+'/rest/v1/'+this._table+(this._filters.length?'?'+this._filters.join('&'):'');
     var r = await fetch(u, {method:'DELETE', headers:getHeaders()});
-    return r.ok ? {data:null,error:null} : {data:null,error:{message:'delete failed'}};
-  } catch(e) { return {data:null,error:e}; }
+    return r.ok ? {data:null,error:null} : {data:null,error:{message:'delete failed '+r.status}};
+  } catch(e) { return {data:null,error:{message:e.message}}; }
 };
 
 async function initSupabase() { /* sb já está pronto, sem SDK */ }
@@ -1424,7 +1426,7 @@ async function renderAppointments() {
     .select('*, clients(id,name,phone,avatar_url), services(id,name,emoji,price)')
     .eq('date', ds).neq('status','cancelled').order('time_start');
 
-  if (error || !data) { list.innerHTML = '<div class="empty"><div class="em">⚠️</div><p>Erro ao carregar</p></div>'; return; }
+  if (error || !data) { list.innerHTML = '<div class="empty"><div class="em">⚠️</div><p>Erro: '+(error?.message||error?.hint||JSON.stringify(error)||'desconhecido')+'</p></div>'; return; }
 
   appointments = data;
   if (!data.length) {
