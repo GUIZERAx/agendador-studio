@@ -698,6 +698,7 @@ input[type=file]{display:none;}
           <div class="pmchip" id="pm-cartao" onclick="selPmChip('cartao')"><span class="icon">💳</span> Cartão</div>
         </div>
       </div>
+      <div class="fg"><label>Observações (opcional)</label><textarea id="aobs" placeholder="Ex: cliente sensível na ponta dos olhos..."></textarea></div>
       <button class="btnp" onclick="saveAppt()">💾 Gravar Agendamento</button>
     </div>
     <!-- FORM BLOCK -->
@@ -976,7 +977,7 @@ const SB_URL = 'https://rxqdjocdzqscuzbxkdny.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4cWRqb2NkenFzY3V6YnhrZG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTc4NzIsImV4cCI6MjA5NDI3Mzg3Mn0.KLJHxO4_d0dovR3KnJoCyuJMWh4P_FHQzbLikui1znQ';
 
 // ═══════════════════════════════════════════════════════
-//  SUPABASE REST WRAPPER — completo e robusto
+//  SUPABASE REST WRAPPER — com suporte a joins
 // ═══════════════════════════════════════════════════════
 function getHeaders(extra) {
   var tok = safeGet('sc_tok') || '';
@@ -1028,21 +1029,23 @@ function SBQ(table) {
 
 // ── FILTERS ──
 SBQ.prototype.select  = function(s){ this._sel=s||'*'; return this; };
-SBQ.prototype.eq      = function(c,v){ this._fil.push(c+'=eq.'+v); return this; };
-SBQ.prototype.neq     = function(c,v){ this._fil.push(c+'=neq.'+v); return this; };
-SBQ.prototype.gte     = function(c,v){ this._fil.push(c+'=gte.'+v); return this; };
-SBQ.prototype.lte     = function(c,v){ this._fil.push(c+'=lte.'+v); return this; };
-SBQ.prototype.gt      = function(c,v){ this._fil.push(c+'=gt.'+v); return this; };
-SBQ.prototype.lt      = function(c,v){ this._fil.push(c+'=lt.'+v); return this; };
-SBQ.prototype.like    = function(c,v){ this._fil.push(c+'=like.'+v); return this; };
-SBQ.prototype.ilike   = function(c,v){ this._fil.push(c+'=ilike.'+v); return this; };
+SBQ.prototype.eq      = function(c,v){ this._fil.push(c+'=eq.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.neq     = function(c,v){ this._fil.push(c+'=neq.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.gte     = function(c,v){ this._fil.push(c+'=gte.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.lte     = function(c,v){ this._fil.push(c+'=lte.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.gt      = function(c,v){ this._fil.push(c+'=gt.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.lt      = function(c,v){ this._fil.push(c+'=lt.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.like    = function(c,v){ this._fil.push(c+'=like.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.ilike   = function(c,v){ this._fil.push(c+'=ilike.'+encodeURIComponent(v)); return this; };
 SBQ.prototype.is      = function(c,v){ this._fil.push(c+'=is.'+v); return this; };
-SBQ.prototype.in      = function(c,v){ this._fil.push(c+'=in.('+v.join(',')+')'); return this; };
+SBQ.prototype.not     = function(c,op,v){ this._fil.push(c+'=not.'+op+'.'+encodeURIComponent(v)); return this; };
+SBQ.prototype.in      = function(c,v){ this._fil.push(c+'=in.('+v.map(x=>encodeURIComponent(x)).join(',')+')'); return this; };
 SBQ.prototype.order   = function(c,o){ this._ord.push(c+((o&&o.ascending===false)?'.desc':'.asc')); return this; };
 SBQ.prototype.limit   = function(n)  { this._lim=n; return this; };
 SBQ.prototype.single  = function()   { this._one=true; return this; };
 
 SBQ.prototype._url = function() {
+  // select with joins must NOT be encoded — Supabase REST parses it as-is
   var u = SB_URL+'/rest/v1/'+this._t+'?select='+this._sel;
   if (this._fil.length) u += '&'+this._fil.join('&');
   if (this._ord.length) u += '&order='+this._ord.join(',');
@@ -1050,7 +1053,7 @@ SBQ.prototype._url = function() {
   return u;
 };
 
-// ── THEN (SELECT) ──
+// ── SELECT (await / .then) ──
 SBQ.prototype.then = function(ok, fail) {
   var self = this;
   return sbFetch(self._url(), {method:'GET', headers:getHeaders()})
@@ -1074,7 +1077,7 @@ SBQ.prototype.insert = async function(rows) {
   return {data: this._one ? (d[0]||null) : d, error:null};
 };
 
-// ── UPDATE ──
+// ── UPDATE — filters go in URL, body is the patch object ──
 SBQ.prototype.update = async function(obj) {
   var u = SB_URL+'/rest/v1/'+this._t+(this._fil.length?'?'+this._fil.join('&'):'');
   return sbFetch(u, {method:'PATCH', headers:getHeaders(), body:JSON.stringify(obj)});
@@ -1095,6 +1098,7 @@ SBQ.prototype.delete = async function() {
   return sbFetch(u, {method:'DELETE', headers:getHeaders()});
 };
 
+// ── STORAGE — Upload real via Supabase REST ──
 // ── STORAGE — Upload real via Supabase REST ──
 sb.storage = {
   from: function(bucket) {
@@ -1445,7 +1449,7 @@ function renderCalendar() {
       selDate = new Date(y, m, d);
       renderCalendar();
       renderAppointments();
-      openApptModal(); // CLICK = ABRE MODAL AUTOMATICAMENTE
+      openApptModal();
     };
     grid.appendChild(c);
   }
@@ -1470,7 +1474,7 @@ async function renderAppointments() {
   list.innerHTML = '<div class="loader"><div class="spin"></div></div>';
 
   const { data, error } = await sb.from('appointments')
-    .select('*, clients(id,name,phone,avatar_url), services(id,name,emoji,price)')
+    .select('*,clients(id,name,phone,avatar_url),services(id,name,emoji,price)')
     .eq('date', ds).neq('status','cancelled').order('time_start');
 
   if (error || !data) { list.innerHTML = '<div class="empty"><div class="em">⚠️</div><p>Erro: '+(error?.message||error?.hint||JSON.stringify(error)||'desconhecido')+'</p></div>'; return; }
@@ -1527,7 +1531,7 @@ async function confirmDel(id, msg) {
 // ═══════════════════════════════════════════════════════
 //  APPOINTMENT MODAL
 // ═══════════════════════════════════════════════════════
-function openApptModal() {
+async function openApptModal() {
   document.getElementById('adate').value = toDS(selDate);
   swTab('a');
   selCliId = null; selSvcId = null; curPm = null; maintPrice = null;
@@ -1538,6 +1542,8 @@ function openApptModal() {
   document.querySelectorAll('.pmchip').forEach(c=>c.classList.remove('on'));
   document.getElementById('maintInfo').classList.remove('show');
   document.getElementById('maintPriceBox').classList.remove('show');
+  // Garante que serviços estão carregados antes de abrir o modal
+  if (!services.length) await loadServices();
   renderSvcSel();
   document.getElementById('mAppt').classList.add('op');
 }
@@ -1603,7 +1609,7 @@ async function quickSaveCli() {
   const phone = document.getElementById('qclph').value.trim();
   if (!name || !phone) { toast('⚠️ Preencha nome e telefone!'); return; }
   const { data, error } = await sb.from('clients').insert({ name, phone });
-  if (error) { toast('❌ Erro ao salvar: ' + error.message, 'er'); return; }
+  if (error) { toast('❌ Erro: ' + (error.message || error.hint || JSON.stringify(error)), 'er'); console.error('saveAppt error:', error); return; }
   const newCli = Array.isArray(data) ? data[0] : data;
   await loadClients();
   if (newCli) pickCli(newCli);
@@ -1653,7 +1659,7 @@ async function checkMaintenance() {
 
   // Get last appointment for this client + same service
   const { data } = await sb.from('appointments')
-    .select('date, is_maintenance, custom_price, services(name)')
+    .select('date,is_maintenance,custom_price,services(name)')
     .eq('client_id', selCliId)
     .eq('service_id', selSvcId)
     .eq('type', 'appointment')
@@ -1716,7 +1722,7 @@ async function openHistory(e, clientId) {
   document.getElementById('mHist').classList.add('op');
 
   const { data, error } = await sb.from('appointments')
-    .select('*, services(name, emoji, price)')
+    .select('*,services(name,emoji,price)')
     .eq('client_id', clientId)
     .eq('type', 'appointment')
     .neq('status', 'cancelled')
@@ -2539,7 +2545,7 @@ function showNotification(title, body, icon='💅') {
 async function checkTodayNotifications() {
   const todayS = toDS(new Date());
   const { data } = await sb.from('appointments')
-    .select('time_start, clients(name), services(name)')
+    .select('time_start,clients(name),services(name)')
     .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
     .order('time_start');
   if (!data || !data.length) return;
@@ -2561,7 +2567,7 @@ async function checkUpcomingAppointments() {
   const todayS = toDS(new Date());
   const now = new Date();
   const { data } = await sb.from('appointments')
-    .select('id, time_start, clients(name), services(name, emoji)')
+    .select('id,time_start,clients(name),services(name,emoji)')
     .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
     .order('time_start');
 
@@ -2608,7 +2614,7 @@ async function checkUpcomingAppointments() {
 async function notifDemo() {
   const todayS = toDS(new Date());
   const { data } = await sb.from('appointments')
-    .select('time_start, clients(name), services(name, emoji)')
+    .select('time_start,clients(name),services(name,emoji)')
     .eq('date', todayS).eq('type','appointment').neq('status','cancelled')
     .order('time_start');
   if (data && data.length) {
@@ -2716,7 +2722,7 @@ async function renderCaixa() {
   document.getElementById('finList').innerHTML = '<div class="loader"><div class="spin"></div></div>';
 
   const { data, error } = await sb.from('appointments')
-    .select('*, clients(id,name,phone), services(id,name,emoji,price)')
+    .select('*,clients(id,name,phone),services(id,name,emoji,price)')
     .eq('type', 'appointment')
     .neq('status', 'cancelled')
     .gte('date', monthStart)
