@@ -56,25 +56,25 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--dark);height
 .cover-overlay-lbl small{color:rgba(255,255,255,.85);font-size:11px;font-weight:600;margin-top:4px;}
 
 /* ── NAV ── */
-.nav{display:flex;background:#fff;border-bottom:1px solid var(--gl);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.nav{display:flex;background:var(--nav-bg,#fff);border-bottom:1px solid var(--gl);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .nav::-webkit-scrollbar{display:none;}
 .ntab{flex:0 0 auto;padding:13px 16px;text-align:center;font-size:11px;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;}
 .ntab.on{color:var(--p);border-bottom-color:var(--p);}
 
 /* ── SCREENS ── */
-.scr{display:none;flex:1;overflow-y:auto;overscroll-behavior:contain;}
+.scr{display:none;flex:1;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);}
 .scr.on{display:block;}
 .pad{padding:14px;}
 
 /* ── CALENDAR ── */
 .mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.mname{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;}
+.mname{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--dark);}
 .mbtn{width:30px;height:30px;border-radius:50%;background:var(--pl);border:none;cursor:pointer;font-size:18px;color:var(--p);display:flex;align-items:center;justify-content:center;transition:.2s;line-height:1;}
 .mbtn:hover{background:var(--p);color:#fff;}
 .wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px;}
 .wd{text-align:center;font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;padding:3px 0;}
 .dgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.dc{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:.15s;position:relative;font-size:13px;font-weight:500;user-select:none;}
+.dc{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:.15s;position:relative;font-size:13px;font-weight:500;user-select:none;color:var(--dc-color,var(--dark));}
 .dc:not(.om):hover{background:var(--pl);transform:scale(1.08);}
 .dc.td{background:var(--p);color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(201,80,106,.35);}
 .dc.sel{background:var(--pd);color:#fff;box-shadow:0 3px 10px rgba(155,48,80,.3);}
@@ -86,7 +86,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--dark);height
 
 /* ── APPOINTMENT CARDS ── */
 .sechdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.sectit{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;}
+.sectit{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--dark);}
 .addbtn{background:var(--p);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Jost',sans-serif;transition:.2s;letter-spacing:.3px;}
 .addbtn:hover{background:var(--pd);transform:translateY(-1px);}
 .acard{background:#fff;border-radius:var(--r);padding:13px;margin-bottom:9px;box-shadow:var(--sh2);display:flex;gap:11px;align-items:center;position:relative;cursor:pointer;transition:.2s;border-left:4px solid var(--p);animation:fadeUp .3s ease;}
@@ -104,7 +104,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--dark);height
 .abadge.ok{background:#e8f5e9;color:#2e7d32;}
 .abadge.blk{background:#f5f5f5;color:#777;}
 .abadge.comp{background:#e3f2fd;color:#1565c0;}
-.empty{text-align:center;padding:36px 16px;color:var(--gray);}
+.empty{text-align:center;padding:36px 16px;color:var(--gray);background:transparent;}
 .empty .em{font-size:38px;margin-bottom:10px;}
 .empty p{font-size:13px;line-height:1.6;}
 
@@ -221,7 +221,7 @@ input[type=file]{display:none;}
 /* ── LOGIN SCREEN ── */
 .login-screen {
   position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(160deg, #1a0810 0%, #2d1020 50%, #1a0818 100%);
+  background: #000000; /* 🎨 COR DO FUNDO DO LOGIN — troque #000000 por qualquer cor */
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 32px 28px;
@@ -1207,6 +1207,7 @@ function loadSettingsUI() {
 //  THEME
 // ═══════════════════════════════════════════════════════
 const PALETTES = [
+  { name:'Preto & Rosa',  p:'#c9506a', pd:'#9b3050', acc:'#f0c0cc', bg:'#0d0d0d' },
   { name:'Rosa Clássico', p:'#c9506a', pd:'#9b3050', acc:'#c9a96e', bg:'#fdf8f5' },
   { name:'Lilás Luxo',    p:'#9c5fb5', pd:'#6d2f8a', acc:'#d4a0e0', bg:'#faf5ff' },
   { name:'Terra & Ouro',  p:'#b57a3a', pd:'#7d4e1a', acc:'#e8c87a', bg:'#fdf6ee' },
@@ -1232,12 +1233,35 @@ function applyColors(p, pd, acc, bg) {
   r.setProperty('--pd', pd);
   r.setProperty('--acc', acc);
   r.setProperty('--bg', bg);
-  // derived
-  r.setProperty('--pl', hexToLight(p, 0.15));
-  r.setProperty('--nude', hexToLight(acc, 0.18));
+
+  // Detecta se fundo é escuro
+  const isDark = isColorDark(bg);
+
+  // Cores derivadas adaptadas ao tema
+  r.setProperty('--pl', hexToLight(p, isDark ? 0.25 : 0.15));
+  r.setProperty('--nude', isDark ? 'rgba(255,255,255,0.06)' : hexToLight(acc, 0.18));
+  r.setProperty('--dark', isDark ? '#f5f0e8' : '#1a1018');
+  r.setProperty('--gray', isDark ? '#c0b0bc' : '#6b5f68');
+  r.setProperty('--gl', isDark ? 'rgba(255,255,255,0.12)' : '#ede6eb');
+  r.setProperty('--white', isDark ? '#1e1218' : '#fff');
+
+  // Nav e cards adaptados
+  r.setProperty('--nav-bg', isDark ? '#1a0d14' : '#fff');
+  r.setProperty('--dc-color', isDark ? '#f0e8ec' : '#1a1018');
+
   // header gradient
   document.getElementById('appHeader').style.background = 
     `linear-gradient(140deg, ${pd} 0%, ${p} 55%, ${lighten(p, 15)} 100%)`;
+}
+
+function isColorDark(hex) {
+  if (!hex || hex[0] !== '#') return false;
+  const r = parseInt(hex.slice(1,3)||'ff',16);
+  const g = parseInt(hex.slice(3,5)||'ff',16);
+  const b = parseInt(hex.slice(5,7)||'ff',16);
+  // Luminância relativa
+  const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+  return lum < 0.4;
 }
 
 function hexToLight(hex, alpha) {
@@ -1521,7 +1545,7 @@ async function renderAppointments() {
           <span class="abadge ok">✓ Confirmado</span>
           <button onclick="sendWA(event,'${cli?.id}','${a.id}')" style="background:#25D366;border:none;border-radius:6px;padding:3px 8px;font-size:10px;color:#fff;cursor:pointer;font-weight:700">📱 WA</button>
         </div>`;
-      card.onclick = () => confirmDel(a.id, 'Cancelar este agendamento?');
+      card.onclick = () => openApptOptions(a);
     }
     list.appendChild(card);
   });
@@ -1532,6 +1556,52 @@ async function confirmDel(id, msg) {
   await sb.from('appointments').update({ status: 'cancelled' }).eq('id', id);
   await loadMonthEvents(); renderCalendar(); await renderAppointments();
   toast('✅ Removido!', 'ok');
+}
+
+function openApptOptions(a) {
+  const cli = a.clients;
+  const svc = a.services;
+  const nome = cli?.name || 'Cliente';
+  const horario = a.time_start || '';
+
+  // Cria sheet de opções
+  const sheet = document.createElement('div');
+  sheet.id = 'apptOptionsSheet';
+  sheet.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;justify-content:flex-end;';
+  sheet.innerHTML = `
+    <div onclick="document.getElementById('apptOptionsSheet').remove()" style="flex:1;background:rgba(0,0,0,.5);"></div>
+    <div style="background:#fff;border-radius:20px 20px 0 0;padding:20px;font-family:'Jost',sans-serif;">
+      <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;">${nome}</div>
+      <div style="font-size:12px;color:var(--gray);margin-bottom:18px;">${svc?.name||'Serviço'} às ${horario}</div>
+      <button onclick="editApptTime('${a.id}','${horario}')" style="width:100%;padding:14px;border-radius:12px;border:2px solid var(--p);background:#fff;color:var(--p);font-size:14px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;margin-bottom:10px;">✏️ Editar horário</button>
+      <button onclick="confirmDelAppt('${a.id}')" style="width:100%;padding:14px;border-radius:12px;border:none;background:#fff0f2;color:#c0334d;font-size:14px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;margin-bottom:10px;">❌ Cancelar agendamento</button>
+      <button onclick="document.getElementById('apptOptionsSheet').remove()" style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--nude);color:var(--gray);font-size:13px;font-weight:600;cursor:pointer;font-family:'Jost',sans-serif;">Fechar</button>
+    </div>`;
+  document.body.appendChild(sheet);
+}
+
+async function confirmDelAppt(id) {
+  document.getElementById('apptOptionsSheet')?.remove();
+  if (!confirm('Cancelar este agendamento?')) return;
+  const { error } = await sb.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+  if (error) { toast('❌ Erro: ' + error.message, 'er'); return; }
+  await loadMonthEvents(); renderCalendar(); await renderAppointments();
+  toast('✅ Agendamento cancelado!', 'ok');
+}
+
+async function editApptTime(id, currentTime) {
+  document.getElementById('apptOptionsSheet')?.remove();
+  const novoHorario = prompt('Novo horário (HH:MM):', currentTime);
+  if (!novoHorario) return;
+  // Valida formato HH:MM
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(novoHorario)) {
+    toast('⚠️ Horário inválido. Use o formato HH:MM (ex: 14:30)');
+    return;
+  }
+  const { error } = await sb.from('appointments').update({ time_start: novoHorario }).eq('id', id);
+  if (error) { toast('❌ Erro: ' + error.message, 'er'); return; }
+  await renderAppointments();
+  toast('✅ Horário atualizado!', 'ok');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1550,6 +1620,11 @@ async function openApptModal() {
   document.getElementById('maintPriceBox').classList.remove('show');
   // Garante que serviços estão carregados antes de abrir o modal
   if (!services.length) await loadServices();
+  apptSvcTab = 'aplic';
+  window._isMaintAppt = false;
+  // Remove tab bar antiga se existir (força recriação)
+  const oldTabBar = document.getElementById('apptSvcTabAplic');
+  if (oldTabBar && oldTabBar.parentNode) oldTabBar.parentNode.remove();
   renderSvcSel();
   document.getElementById('mAppt').classList.add('op');
 }
@@ -1565,17 +1640,65 @@ function swTab(t) {
   }
 }
 
+let apptSvcTab = 'aplic'; // aba ativa no modal de agendamento
+
+function setApptSvcTab(tab) {
+  apptSvcTab = tab;
+  const btnA = document.getElementById('apptSvcTabAplic');
+  const btnM = document.getElementById('apptSvcTabMaint');
+  if (btnA) {
+    const isA = tab === 'aplic';
+    btnA.style.background  = isA ? 'var(--p)' : '#f0f0f0';
+    btnA.style.color       = isA ? '#fff' : 'var(--gray)';
+    btnM.style.background  = !isA ? 'var(--p)' : '#f0f0f0';
+    btnM.style.color       = !isA ? '#fff' : 'var(--gray)';
+  }
+  renderSvcSel();
+}
+
 function renderSvcSel() {
   const c = document.getElementById('svcsel'); c.innerHTML = '';
-  services.forEach(s => {
+
+  // Injeta abas se ainda não existirem
+  if (!document.getElementById('apptSvcTabAplic')) {
+    const tabBar = document.createElement('div');
+    tabBar.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;';
+    tabBar.innerHTML = `
+      <button id="apptSvcTabAplic" onclick="setApptSvcTab('aplic')" style="flex:1;padding:8px;border-radius:10px;border:none;background:var(--p);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;">💅 Aplicação</button>
+      <button id="apptSvcTabMaint" onclick="setApptSvcTab('maint')" style="flex:1;padding:8px;border-radius:10px;border:none;background:#f0f0f0;color:var(--gray);font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;">🔄 Manutenção</button>`;
+    c.parentNode.insertBefore(tabBar, c);
+  }
+
+  const list = apptSvcTab === 'aplic'
+    ? services
+    : services.filter(s => s.maintenance_15 || s.maintenance_20);
+
+  if (!list.length) {
+    c.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--gray);">Nenhum serviço com preço de manutenção.<br>Edite o serviço e cadastre os valores.</div>';
+    return;
+  }
+
+  list.forEach(s => {
     const el = document.createElement('div');
     el.className = 'svopt' + (selSvcId===s.id?' on':'');
     const thumb = s.photo_url
       ? `<div class="sthumb"><img src="${s.photo_url}" alt=""></div>`
       : `<div class="sthumb">${s.emoji||'✨'}</div>`;
-    el.innerHTML = `${thumb}<div><div class="svoptnm">${s.name}</div><div class="svoptpr">R$ ${Number(s.price).toFixed(2)}</div></div>`;
+
+    // Preço exibido depende da aba
+    const priceStr = apptSvcTab === 'maint'
+      ? (s.maintenance_15 ? `R$ ${Number(s.maintenance_15).toFixed(2)}` + (s.maintenance_20 ? ` / R$ ${Number(s.maintenance_20).toFixed(2)}` : '') : `R$ ${Number(s.price).toFixed(2)}`)
+      : `R$ ${Number(s.price).toFixed(2)}`;
+
+    el.innerHTML = `${thumb}<div><div class="svoptnm">${s.name}</div><div class="svoptpr">${priceStr}</div></div>`;
     el.onclick = () => {
       selSvcId = s.id;
+      // Se aba manutenção, marca como manutenção automaticamente
+      if (apptSvcTab === 'maint') {
+        window._isMaintAppt = true;
+      } else {
+        window._isMaintAppt = false;
+      }
       renderSvcSel();
       checkMaintenance();
     };
@@ -2074,18 +2197,47 @@ function previewCliPhoto(input) {
   up.appendChild(img); icon.style.display='none';
 }
 
+async function fileToBase64Small(file) {
+  return new Promise((res) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // Comprime via canvas para no máx 200x200
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 200;
+        const ratio = Math.min(size/img.width, size/img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        res(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function saveCli() {
   const name=document.getElementById('clnm').value.trim(), phone=document.getElementById('clph').value.trim();
   if(!name||!phone){toast('⚠️ Preencha nome e telefone!');return;}
 
   let avatarUrl=cliPhotoUrl;
   if(cliPhotoFile){
-    const ext=cliPhotoFile.name.split('.').pop();
-    const path=`cli_${Date.now()}.${ext}`;
-    const {error:upErr}=await sb.storage.from('avatars').upload(path,cliPhotoFile,{upsert:true});
-    if(!upErr){
-      const {data:urlData}=sb.storage.from('avatars').getPublicUrl(path);
-      avatarUrl=urlData.publicUrl;
+    try {
+      // Tenta upload no Supabase Storage
+      const ext=cliPhotoFile.name.split('.').pop();
+      const path=`cli_${Date.now()}.${ext}`;
+      const {error:upErr}=await sb.storage.from('avatars').upload(path,cliPhotoFile,{upsert:true,contentType:cliPhotoFile.type});
+      if(!upErr){
+        const {data:urlData}=sb.storage.from('avatars').getPublicUrl(path);
+        avatarUrl=urlData.publicUrl;
+      } else {
+        // Fallback: salva como base64 (funciona sem bucket configurado)
+        avatarUrl = await fileToBase64Small(cliPhotoFile);
+      }
+    } catch(e) {
+      avatarUrl = await fileToBase64Small(cliPhotoFile);
     }
   }
 
