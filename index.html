@@ -939,7 +939,7 @@ input[type=file]{display:none;}
         <label>Para qual cliente?</label>
         <input type="text" id="msgSendSearch" placeholder="Buscar cliente por nome ou telefone..." oninput="searchMsgClient()" autocomplete="off">
         <div id="msgSendSugs" style="border:1px solid var(--gl);border-radius:10px;margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
-        <div id="msgSendSelected" style="display:none;background:var(--pl);border-radius:10px;padding:9px 12px;margin-top:6px;display:none;">
+        <div id="msgSendSelected" style="display:none;background:var(--pl);border-radius:10px;padding:9px 12px;margin-top:6px;">
           <span id="msgSendName" style="font-weight:700;font-size:14px;"></span>
           <span id="msgSendPhone" style="font-size:11px;color:var(--gray);margin-left:8px;"></span>
           <span onclick="clearMsgClient()" style="float:right;cursor:pointer;color:var(--p);font-size:16px;">✕</span>
@@ -972,123 +972,156 @@ window.addEventListener('unhandledrejection', function(e){ e.preventDefault(); }
 // ═══════════════════════════════════════════════════════
 //  SUPABASE REST — sem SDK, sem CDN, zero Script error
 // ═══════════════════════════════════════════════════════
-const SB_URL = 'https://hoswqokeofcyszajihyl.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhvc3dxb2tlb2ZjeXN6YWppaHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDEzNzYsImV4cCI6MjA5Mjk3NzM3Nn0.d1vgU0oG_oNPoxKr7Wt-NP21UlM4CVhH2WuEwEeFVsM';
+const SB_URL = 'https://rxqdjocdzqscuzbxkdny.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4cWRqb2NkenFzY3V6YnhrZG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTc4NzIsImV4cCI6MjA5NDI3Mzg3Mn0.KLJHxO4_d0dovR3KnJoCyuJMWh4P_FHQzbLikui1znQ';
 
-function getHeaders() {
+// ═══════════════════════════════════════════════════════
+//  SUPABASE REST WRAPPER — completo e robusto
+// ═══════════════════════════════════════════════════════
+function getHeaders(extra) {
   var tok = safeGet('sc_tok') || '';
-  return {
+  var h = {
     'apikey': SB_KEY,
     'Authorization': 'Bearer ' + (tok && tok !== 'bypass' ? tok : SB_KEY),
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
+  if (extra) Object.assign(h, extra);
+  return h;
 }
 
-// Wrapper que imita a API do Supabase SDK
-var sb = {
-  from: function(table) {
-    return new SBQuery(table);
+async function sbFetch(url, opts) {
+  try {
+    var r = await fetch(url, opts);
+    var text = await r.text();
+    var d = text ? JSON.parse(text) : null;
+    if (!r.ok) {
+      if (r.status === 401) {
+        var ok2 = await tryRefreshToken();
+        if (!ok2) { doLogout(true); return {data:null,error:{message:'Sessão expirada'}}; }
+        r = await fetch(url, Object.assign({}, opts, {headers: getHeaders(opts._extraHeaders)}));
+        text = await r.text();
+        d = text ? JSON.parse(text) : null;
+        if (!r.ok) return {data:null, error: d || {message:'Erro '+r.status}};
+      } else {
+        return {data:null, error: d || {message:'Erro '+r.status}};
+      }
+    }
+    return {data: d, error: null};
+  } catch(e) {
+    return {data:null, error:{message: e.message}};
   }
+}
+
+var sb = {
+  from: function(table) { return new SBQ(table); }
 };
 
-function SBQuery(table) {
-  this._table = table;
+function SBQ(table) {
+  this._t = table;
   this._sel = '*';
-  this._filters = [];
-  this._order = null;
+  this._fil = [];
+  this._ord = [];
   this._lim = null;
-  this._single = false;
+  this._one = false;
 }
-SBQuery.prototype.select = function(s) { this._sel = s||'*'; return this; };
-SBQuery.prototype.eq    = function(c,v) { this._filters.push(c+'=eq.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.neq   = function(c,v) { this._filters.push(c+'=neq.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.gte   = function(c,v) { this._filters.push(c+'=gte.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.lte   = function(c,v) { this._filters.push(c+'=lte.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.gt    = function(c,v) { this._filters.push(c+'=gt.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.lt    = function(c,v) { this._filters.push(c+'=lt.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.like  = function(c,v) { this._filters.push(c+'=like.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.ilike = function(c,v) { this._filters.push(c+'=ilike.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.is    = function(c,v) { this._filters.push(c+'=is.'+encodeURIComponent(v)); return this; };
-SBQuery.prototype.in    = function(c,v) { this._filters.push(c+'=in.('+v.map(encodeURIComponent).join(',')+')'); return this; };
-SBQuery.prototype.order = function(c,o) {
-  if (!this._orders) this._orders = [];
-  this._orders.push(c+(o&&o.ascending===false?'.desc':'.asc'));
-  this._order = this._orders.join(',');
-  return this;
-};
-SBQuery.prototype.limit = function(n)   { this._lim = n; return this; };
-SBQuery.prototype.single= function()    { this._single = true; return this; };
-SBQuery.prototype._url = function() {
-  var u = SB_URL+'/rest/v1/'+this._table+'?select='+this._sel;
-  if (this._filters.length) u += '&'+this._filters.join('&');
-  if (this._order) u += '&order='+this._order;
+
+// ── FILTERS ──
+SBQ.prototype.select  = function(s){ this._sel=s||'*'; return this; };
+SBQ.prototype.eq      = function(c,v){ this._fil.push(c+'=eq.'+v); return this; };
+SBQ.prototype.neq     = function(c,v){ this._fil.push(c+'=neq.'+v); return this; };
+SBQ.prototype.gte     = function(c,v){ this._fil.push(c+'=gte.'+v); return this; };
+SBQ.prototype.lte     = function(c,v){ this._fil.push(c+'=lte.'+v); return this; };
+SBQ.prototype.gt      = function(c,v){ this._fil.push(c+'=gt.'+v); return this; };
+SBQ.prototype.lt      = function(c,v){ this._fil.push(c+'=lt.'+v); return this; };
+SBQ.prototype.like    = function(c,v){ this._fil.push(c+'=like.'+v); return this; };
+SBQ.prototype.ilike   = function(c,v){ this._fil.push(c+'=ilike.'+v); return this; };
+SBQ.prototype.is      = function(c,v){ this._fil.push(c+'=is.'+v); return this; };
+SBQ.prototype.in      = function(c,v){ this._fil.push(c+'=in.('+v.join(',')+')'); return this; };
+SBQ.prototype.order   = function(c,o){ this._ord.push(c+((o&&o.ascending===false)?'.desc':'.asc')); return this; };
+SBQ.prototype.limit   = function(n)  { this._lim=n; return this; };
+SBQ.prototype.single  = function()   { this._one=true; return this; };
+
+SBQ.prototype._url = function() {
+  var u = SB_URL+'/rest/v1/'+this._t+'?select='+this._sel;
+  if (this._fil.length) u += '&'+this._fil.join('&');
+  if (this._ord.length) u += '&order='+this._ord.join(',');
   if (this._lim) u += '&limit='+this._lim;
   return u;
 };
-SBQuery.prototype.then = function(ok, fail) {
+
+// ── THEN (SELECT) ──
+SBQ.prototype.then = function(ok, fail) {
   var self = this;
-  return fetch(self._url(), {headers: getHeaders()})
-    .then(function(r) {
-      return r.json().then(function(d) {
-        if (!r.ok) {
-          // JWT expirado — faz refresh ou desloga
-          if (r.status === 401 || (d && (d.message||'').toLowerCase().includes('jwt'))) {
-            return tryRefreshToken().then(function(ok2) {
-              if (!ok2) { doLogout(); return {data:null, error:{message:'Sessão expirada. Faça login novamente.'}}; }
-              // retry once after refresh
-              return fetch(self._url(), {headers: getHeaders()}).then(function(r2){
-                return r2.json().then(function(d2){
-                  return r2.ok ? {data: Array.isArray(d2)?(self._single?d2[0]||null:d2):d2, error:null} : {data:null,error:d2};
-                });
-              });
-            });
-          }
-          return {data: null, error: d};
-        }
-        if (Array.isArray(d)) return {data: self._single ? (d[0]||null) : d, error: null};
-        return {data: d, error: null};
-      });
+  return sbFetch(self._url(), {method:'GET', headers:getHeaders()})
+    .then(function(res) {
+      if (res.error) return res;
+      var d = res.data;
+      if (Array.isArray(d)) return {data: self._one ? (d[0]||null) : d, error:null};
+      return {data: d, error:null};
     })
-    .catch(function(e) { return {data: null, error: {message: e.message}}; })
     .then(ok, fail);
 };
-SBQuery.prototype.insert = async function(rows) {
+
+// ── INSERT ──
+SBQ.prototype.insert = async function(rows) {
   var body = Array.isArray(rows) ? rows : [rows];
-  try {
-    var r = await fetch(SB_URL+'/rest/v1/'+this._table, {
-      method:'POST', headers:getHeaders(), body:JSON.stringify(body)
-    });
-    var d = await r.json();
-    return r.ok ? {data: Array.isArray(d)?d:[d], error:null} : {data:null, error:d};
-  } catch(e) { return {data:null, error:{message:e.message}}; }
-};
-SBQuery.prototype.update = async function(obj) {
-  try {
-    var u = SB_URL+'/rest/v1/'+this._table+(this._filters.length?'?'+this._filters.join('&'):'');
-    var r = await fetch(u, {method:'PATCH', headers:getHeaders(), body:JSON.stringify(obj)});
-    var d = await r.json();
-    return r.ok ? {data:d, error:null} : {data:null, error:d};
-  } catch(e) { return {data:null, error:{message:e.message}}; }
-};
-SBQuery.prototype.upsert = async function(rows) {
-  var body = Array.isArray(rows) ? rows : [rows];
-  var h = Object.assign({}, getHeaders(), {'Prefer':'resolution=merge-duplicates,return=representation'});
-  try {
-    var r = await fetch(SB_URL+'/rest/v1/'+this._table, {method:'POST', headers:h, body:JSON.stringify(body)});
-    var d = await r.json();
-    return r.ok ? {data:d, error:null} : {data:null, error:d};
-  } catch(e) { return {data:null, error:{message:e.message}}; }
-};
-SBQuery.prototype.delete = async function() {
-  try {
-    var u = SB_URL+'/rest/v1/'+this._table+(this._filters.length?'?'+this._filters.join('&'):'');
-    var r = await fetch(u, {method:'DELETE', headers:getHeaders()});
-    return r.ok ? {data:null,error:null} : {data:null,error:{message:'delete failed '+r.status}};
-  } catch(e) { return {data:null,error:{message:e.message}}; }
+  var res = await sbFetch(SB_URL+'/rest/v1/'+this._t, {
+    method:'POST', headers:getHeaders(), body:JSON.stringify(body)
+  });
+  if (res.error) return res;
+  var d = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []);
+  return {data: this._one ? (d[0]||null) : d, error:null};
 };
 
-async function initSupabase() { /* sb já está pronto, sem SDK */ }
+// ── UPDATE ──
+SBQ.prototype.update = async function(obj) {
+  var u = SB_URL+'/rest/v1/'+this._t+(this._fil.length?'?'+this._fil.join('&'):'');
+  return sbFetch(u, {method:'PATCH', headers:getHeaders(), body:JSON.stringify(obj)});
+};
+
+// ── UPSERT ──
+SBQ.prototype.upsert = async function(rows, opts) {
+  var body = Array.isArray(rows) ? rows : [rows];
+  var conflict = (opts && opts.onConflict) ? opts.onConflict : 'id';
+  var extra = {'Prefer':'resolution=merge-duplicates,return=representation'};
+  var u = SB_URL+'/rest/v1/'+this._t+'?on_conflict='+conflict;
+  return sbFetch(u, {method:'POST', headers:getHeaders(extra), body:JSON.stringify(body), _extraHeaders:extra});
+};
+
+// ── DELETE ──
+SBQ.prototype.delete = async function() {
+  var u = SB_URL+'/rest/v1/'+this._t+(this._fil.length?'?'+this._fil.join('&'):'');
+  return sbFetch(u, {method:'DELETE', headers:getHeaders()});
+};
+
+// ── STORAGE — Upload real via Supabase REST ──
+sb.storage = {
+  from: function(bucket) {
+    return {
+      upload: async function(path, file, opts) {
+        try {
+          var url = SB_URL + '/storage/v1/object/' + bucket + '/' + path;
+          var headers = {
+            'apikey': SB_KEY,
+            'Authorization': 'Bearer ' + (safeGet('sc_tok') || SB_KEY),
+            'Content-Type': (opts && opts.contentType) || file.type || 'application/octet-stream',
+          };
+          if (opts && opts.upsert) headers['x-upsert'] = 'true';
+          var r = await fetch(url, { method: 'POST', headers: headers, body: file });
+          if (!r.ok) { var e = await r.json().catch(()=>{}); return {data:null,error:e||{message:'Upload error'}}; }
+          return {data:{path:path},error:null};
+        } catch(e) { return {data:null,error:{message:e.message}}; }
+      },
+      getPublicUrl: function(path) {
+        var publicUrl = SB_URL + '/storage/v1/object/public/' + bucket + '/' + path;
+        return {data:{publicUrl:publicUrl}};
+      }
+    };
+  }
+};
+
+async function initSupabase() { /* wrapper já pronto */ }
 
 // Lê token salvo (usado pelo showApp)
 function getSavedToken() {
@@ -1569,10 +1602,11 @@ async function quickSaveCli() {
   const name = document.getElementById('qclnm').value.trim();
   const phone = document.getElementById('qclph').value.trim();
   if (!name || !phone) { toast('⚠️ Preencha nome e telefone!'); return; }
-  const { data, error } = await sb.from('clients').insert({ name, phone }).select().single();
+  const { data, error } = await sb.from('clients').insert({ name, phone });
   if (error) { toast('❌ Erro ao salvar: ' + error.message, 'er'); return; }
+  const newCli = Array.isArray(data) ? data[0] : data;
   await loadClients();
-  pickCli(data);
+  if (newCli) pickCli(newCli);
   document.getElementById('qclibox').style.display = 'none';
   document.getElementById('qcliToggle').style.display = 'none';
   document.getElementById('qclnm').value = '';
@@ -2757,7 +2791,7 @@ function renderCaixaList() {
   list.innerHTML = '';
   Object.keys(byDate).sort((a,b) => b.localeCompare(a)).forEach(date => {
     const items = byDate[date];
-    const dayTotal = items.reduce((acc, a) => acc + (Number(a.services?.price) || 0), 0);
+    const dayTotal = items.reduce((acc, a) => acc + (Number(a.custom_price || a.services?.price) || 0), 0);
     const header = document.createElement('div');
     header.className = 'fin-date-header';
     header.innerHTML = `${fmtDS(date)} <span class="fin-day-total">${fmt2(dayTotal)}</span>`;
@@ -2989,7 +3023,7 @@ async function saveNota() {
   const obj = { titulo, texto, updated_at: now };
   let error;
   if (editNotaId) {
-    const r = await sb.from('notas').eq('id', editNotaId).update(obj);
+    const r = await sb.from('notas').update(obj).eq('id', editNotaId);
     error = r.error;
   } else {
     obj.created_at = now;
@@ -3005,7 +3039,7 @@ async function saveNota() {
 async function deleteNota() {
   if (!editNotaId) return;
   if (!confirm('Excluir esta anotação? Não tem como desfazer.')) return;
-  const { error } = await sb.from('notas').eq('id', editNotaId).delete();
+  const { error } = await sb.from('notas').delete().eq('id', editNotaId);
   if (error) { toast('❌ Erro ao excluir', 'er'); return; }
   closeModal('mNota');
   toast('🗑️ Anotação excluída', 'ok');
